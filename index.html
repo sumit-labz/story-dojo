@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Story Dojo</title>
+<meta name="description" content="A thinking tool for building story structure — premise, character, and plot, seen through shifting lenses.">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #F4F4F1; }
+  body { font-family: 'Hanken Grotesk', system-ui, sans-serif; color: #1a1a18; -webkit-font-smoothing: antialiased; }
+  ::selection { background: rgba(168,118,47,0.18); }
+  ::-webkit-scrollbar { width: 11px; height: 11px; }
+  ::-webkit-scrollbar-thumb { background: #dcd9d0; border: 3px solid #F4F4F1; border-radius: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  textarea, input, select, button { font-family: inherit; }
+  select { -webkit-appearance: none; appearance: none; }
+  input::placeholder, textarea::placeholder { color: #adaa9f; }
+  @keyframes sd-zoom { from { transform: scale(0.985) translateY(8px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+  @keyframes sd-dim { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes sd-slide { from { transform: translateX(-16px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+</style>
+</helmet>
+<div style="position:fixed; inset:0; background:#F4F4F1; color:#1a1a18; overflow:hidden; display:flex; flex-direction:column;">
+
+  <!-- MASTHEAD -->
+  <header style="position:relative; z-index:6; display:flex; align-items:center; gap:30px; padding:15px 32px; flex:none; border-bottom:1px solid #e4e2db; background:#F4F4F1;">
+    <button onClick="{{ toggleStories }}" style="background:none; border:none; padding:0; cursor:pointer; text-align:left; display:flex; align-items:baseline; gap:11px; flex:none;" style-hover="opacity:0.62;">
+      <span style="font-size:19px; font-weight:600; letter-spacing:-0.01em; color:#1a1a18; white-space:nowrap;">{{ storyTitle }}</span>
+      <span style="font-size:11px; font-weight:500; color:#adaa9f; white-space:nowrap;">{{ storyIndex }}</span>
+    </button>
+    <div style="width:1px; height:20px; background:#e4e2db; flex:none;"></div>
+    <nav style="display:flex; align-items:center; gap:22px; flex:1; min-width:0; overflow:hidden;">
+      <sc-for list="{{ lenses }}" as="l" hint-placeholder-count="7">
+        <button onClick="{{ l.onClick }}" style="{{ l.style }}" style-hover="color:#1a1a18;">{{ l.name }}</button>
+      </sc-for>
+    </nav>
+    <button onClick="{{ openExport }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:14px; font-weight:500; color:#8a877f; flex:none;" style-hover="color:#1a1a18;">Export</button>
+  </header>
+
+  <main style="position:relative; z-index:2; flex:1; min-height:0; overflow:hidden;">
+
+    <!-- MAP -->
+    <sc-if value="{{ isMap }}" hint-placeholder-val="{{ true }}">
+      <div onMouseDown="{{ onCanvasDown }}" onWheel="{{ onWheel }}" style="position:absolute; inset:0; overflow:hidden; cursor:grab; background:#F4F4F1;">
+        <div style="{{ canvasStyle }}">
+          {{ mapLinesEl }}
+          <sc-for list="{{ mapObjects }}" as="o" hint-placeholder-count="8">
+            <div onMouseDown="{{ o.onDown }}" style="{{ o.wrap }}" style-hover="opacity:0.72;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px;">
+                <span style="font-size:13px; font-weight:500; color:#8a877f; white-space:nowrap;">{{ o.name }}</span>
+                <span style="{{ o.markStyle }}">{{ o.mark }}</span>
+                <sc-if value="{{ o.hasTag }}" hint-placeholder-val="{{ false }}">
+                  <span style="{{ o.tagStyle }}">{{ o.tag }}</span>
+                </sc-if>
+              </div>
+              <div style="{{ o.textStyle }}">{{ o.text }}</div>
+              <sc-if value="{{ o.truncated }}" hint-placeholder-val="{{ false }}">
+                <div style="{{ o.cueStyle }}">＋ full thought</div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="position:absolute; left:32px; bottom:24px; display:flex; align-items:center; gap:16px; z-index:6;">
+          <button onClick="{{ zoomOut }}" style="background:none; border:none; color:#8a877f; cursor:pointer; font-size:18px; line-height:1; padding:0;" style-hover="color:#1a1a18;">−</button>
+          <span style="font-size:12px; font-weight:500; color:#adaa9f; width:38px; text-align:center;">{{ scaleLabel }}</span>
+          <button onClick="{{ zoomIn }}" style="background:none; border:none; color:#8a877f; cursor:pointer; font-size:18px; line-height:1; padding:0;" style-hover="color:#1a1a18;">+</button>
+          <button onClick="{{ resetView }}" style="background:none; border:none; color:#adaa9f; cursor:pointer; font-size:13px; font-weight:500; padding:0 0 0 6px;" style-hover="color:#1a1a18;">Recenter</button>
+        </div>
+        <div style="position:absolute; left:32px; top:22px; z-index:6; font-size:14px; color:#adaa9f; max-width:360px; line-height:1.5;">{{ lensBlurb }}</div>
+      </div>
+    </sc-if>
+
+    <!-- WORK (Plot / Scenes) -->
+    <sc-if value="{{ isWork }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; overflow-y:auto; background:#F4F4F1;">
+        <div style="max-width:940px; margin:0 auto; padding:56px 44px 120px;">
+          <div style="font-size:13px; font-weight:500; color:#a8762f; margin-bottom:14px;">{{ workKicker }}</div>
+          <h1 style="font-size:34px; font-weight:600; letter-spacing:-0.02em; color:#1a1a18; margin:0 0 12px; line-height:1.05;">{{ workTitle }}</h1>
+          <p style="font-size:17px; line-height:1.55; color:#55534d; max-width:60ch; margin:0 0 40px;">{{ workBlurb }}</p>
+
+          <div style="display:flex; gap:20px; align-items:flex-start; border-top:1px solid #1a1a18; border-bottom:1px solid #e4e2db; padding:18px 0; margin-bottom:36px;">
+            <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
+              <input value="{{ newTitle }}" onInput="{{ setNewTitle }}" placeholder="{{ workTitlePh }}" style="background:none; border:none; color:#1a1a18; font-size:19px; font-weight:500; padding:2px 0; outline:none;" />
+              <textarea value="{{ newText }}" onInput="{{ setNewText }}" placeholder="A provisional beat — leave it half-formed." style="background:none; border:none; color:#55534d; font-size:15px; line-height:1.55; padding:0; outline:none; resize:none; min-height:42px;"></textarea>
+            </div>
+            <button onClick="{{ addToList }}" style="align-self:center; background:#1a1a18; border:none; color:#F4F4F1; font-size:14px; font-weight:500; padding:9px 20px; border-radius:2px; cursor:pointer;" style-hover="background:#3a3833;">Place</button>
+          </div>
+
+          <sc-if value="{{ collEmpty }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:16px; line-height:1.5; color:#adaa9f; padding:6px 0;">Nothing placed here yet. This develops from the structure, when you are ready.</div>
+          </sc-if>
+          <div style="columns:2; column-gap:32px;">
+            <sc-for list="{{ collItems }}" as="it" hint-placeholder-count="0">
+              <div style="break-inside:avoid; border-top:1px solid #e4e2db; padding:16px 0 22px; position:relative;">
+                <div style="font-size:12px; font-weight:500; color:#adaa9f; margin-bottom:8px;">{{ it.tag }}</div>
+                <input value="{{ it.title }}" onInput="{{ it.onTitle }}" style="background:none; border:none; color:#1a1a18; font-size:19px; font-weight:500; width:100%; padding:0 0 4px; outline:none;" />
+                <textarea value="{{ it.text }}" onInput="{{ it.onText }}" style="background:none; border:none; color:#55534d; font-size:15px; line-height:1.55; width:100%; padding:0; outline:none; resize:none; min-height:38px;"></textarea>
+                <button onClick="{{ it.onRemove }}" style="position:absolute; top:16px; right:0; background:none; border:none; color:#c9c6bd; cursor:pointer; font-size:16px; line-height:1;" style-hover="color:#a8762f;">×</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- MEMORY -->
+    <sc-if value="{{ isMemory }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; overflow-y:auto; background:#F4F4F1;">
+        <div style="max-width:840px; margin:0 auto; padding:56px 44px 120px;">
+          <div style="font-size:13px; font-weight:500; color:#a8762f; margin-bottom:14px;">Memory</div>
+          <h1 style="font-size:34px; font-weight:600; letter-spacing:-0.02em; color:#1a1a18; margin:0 0 12px; line-height:1.05;">What you used to believe</h1>
+          <p style="font-size:17px; line-height:1.55; color:#55534d; max-width:56ch; margin:0 0 48px;">Nothing is overwritten. Each element keeps the shape of its own evolution — the drafts you moved through are creative material too.</p>
+          <sc-for list="{{ memoryRows }}" as="m" hint-placeholder-count="6">
+            <div onClick="{{ m.onOpen }}" style="border-top:1px solid #e4e2db; padding:26px 0; cursor:pointer; display:grid; grid-template-columns:180px 1fr; gap:28px;" style-hover="opacity:0.66;">
+              <div>
+                <div style="font-size:14px; font-weight:600; color:#1a1a18;">{{ m.name }}</div>
+                <div style="font-size:12px; font-weight:500; color:#adaa9f; margin-top:7px;">{{ m.meta }}</div>
+              </div>
+              <div>
+                <sc-for list="{{ m.chain }}" as="v" hint-placeholder-count="1">
+                  <div style="{{ v.rowStyle }}">
+                    <span style="font-size:11px; font-weight:500; color:#c2beb4; flex:none; width:26px;">{{ v.n }}</span>
+                    <span style="{{ v.textStyle }}">{{ v.text }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+  </main>
+
+  <!-- FOCUS -->
+  <sc-if value="{{ focusOn }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeFocus }}" style="position:absolute; inset:0; z-index:20; background:rgba(30,28,24,0.28); animation:sd-dim .16s ease;"></div>
+    <div style="position:absolute; inset:0; z-index:21; display:flex; justify-content:center; overflow-y:auto; pointer-events:none;">
+      <div onClick="{{ stop }}" style="pointer-events:auto; width:740px; max-width:94vw; margin:auto; padding:40px 0 60px; animation:sd-zoom .24s cubic-bezier(.2,.8,.2,1);">
+        <div style="{{ f.sheetStyle }}">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:22px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:14px; font-weight:600; color:#1a1a18;">{{ f.name }}</span>
+              <span style="{{ f.markStyle }}">{{ f.mark }}</span>
+              <span style="font-size:13px; font-weight:500; color:#adaa9f;">{{ f.stateLabel }}</span>
+            </div>
+            <button onClick="{{ closeFocus }}" style="background:none; border:none; cursor:pointer; font-size:13px; font-weight:500; color:#8a877f;" style-hover="color:#1a1a18;">Close</button>
+          </div>
+
+          <sc-if value="{{ f.hasReview }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; align-items:center; gap:14px; background:#f6ecd8; border-left:2px solid #a8762f; padding:11px 14px; margin-bottom:24px; border-radius:2px;">
+              <span style="font-size:14px; color:#7a5a1f; flex:1;">{{ f.reviewText }}</span>
+              <button onClick="{{ f.settle }}" style="background:none; border:none; color:#a8762f; font-size:13px; font-weight:600; padding:0; cursor:pointer;" style-hover="opacity:0.7;">Settle</button>
+            </div>
+          </sc-if>
+
+          <textarea value="{{ f.text }}" onInput="{{ f.onText }}" placeholder="Write it as it stands. Leave it unresolved if it is unresolved." style="{{ f.editStyle }}"></textarea>
+
+          <div style="display:flex; align-items:center; gap:20px; margin-top:24px; flex-wrap:wrap;">
+            <sc-for list="{{ f.stateOptions }}" as="so" hint-placeholder-count="3">
+              <button onClick="{{ so.onClick }}" style="{{ so.style }}">{{ so.label }}</button>
+            </sc-for>
+            <span style="width:1px; height:16px; background:#e4e2db;"></span>
+            <button onClick="{{ f.toggleDiscovery }}" style="{{ f.discoveryStyle }}">✦ Discovery</button>
+            <span style="flex:1;"></span>
+            <button onClick="{{ f.commitVersion }}" style="background:none; border:none; color:#8a877f; font-size:13px; font-weight:500; cursor:pointer;" style-hover="color:#1a1a18;">＋ Keep as draft</button>
+          </div>
+
+          <div style="margin-top:38px; border-top:1px solid #e4e2db; padding-top:22px;">
+            <div style="font-size:13px; font-weight:600; color:#8a877f; margin-bottom:16px;">Relationships</div>
+            <sc-for list="{{ f.relations }}" as="r" hint-placeholder-count="0">
+              <div style="display:flex; align-items:baseline; gap:12px; padding:9px 0; border-bottom:1px solid #ecebe4;">
+                <span style="{{ r.verbStyle }}">{{ r.dir }}{{ r.verb }}</span>
+                <span style="font-size:15px; color:#1a1a18; flex:1;">{{ r.otherName }} — <span style="color:#8a877f;">{{ r.otherText }}</span></span>
+                <button onClick="{{ r.onRemove }}" style="background:none; border:none; color:#c9c6bd; cursor:pointer; font-size:15px; line-height:1;" style-hover="color:#a8762f;">×</button>
+              </div>
+            </sc-for>
+            <div style="display:flex; align-items:center; gap:12px; margin-top:16px;">
+              <span style="font-size:14px; color:#adaa9f; flex:none;">this</span>
+              <select value="{{ f.relVerb }}" onChange="{{ f.setRelVerb }}" style="background:#efeee9; border:1px solid #e4e2db; color:#1a1a18; font-size:14px; padding:7px 9px; border-radius:2px; cursor:pointer;">
+                <sc-for list="{{ f.verbOptions }}" as="vo" hint-placeholder-count="8">
+                  <option value="{{ vo }}">{{ vo }}</option>
+                </sc-for>
+              </select>
+              <select value="{{ f.relTarget }}" onChange="{{ f.setRelTarget }}" style="background:#efeee9; border:1px solid #e4e2db; color:#1a1a18; font-size:14px; padding:7px 9px; border-radius:2px; cursor:pointer; flex:1; min-width:0;">
+                <option value="">choose an element…</option>
+                <sc-for list="{{ f.targetOptions }}" as="to" hint-placeholder-count="6">
+                  <option value="{{ to.key }}">{{ to.label }}</option>
+                </sc-for>
+              </select>
+              <button onClick="{{ f.addRelation }}" style="background:#1a1a18; border:none; color:#F4F4F1; font-size:13px; font-weight:500; padding:8px 14px; border-radius:2px; cursor:pointer; flex:none;" style-hover="background:#3a3833;">Draw</button>
+            </div>
+          </div>
+
+          <sc-if value="{{ f.hasDrafts }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:34px; border-top:1px solid #e4e2db; padding-top:22px;">
+              <div style="font-size:13px; font-weight:600; color:#8a877f; margin-bottom:16px;">Drafts — what this used to be</div>
+              <sc-for list="{{ f.versions }}" as="v" hint-placeholder-count="1">
+                <div onClick="{{ v.onUse }}" style="{{ v.style }}">
+                  <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px;">
+                    <span style="font-size:12px; font-weight:600; color:#1a1a18;">{{ v.n }}{{ v.currentTag }}</span>
+                    <span style="font-size:11px; font-weight:500; color:#adaa9f;">{{ v.when }}</span>
+                  </div>
+                  <div style="font-size:15px; line-height:1.5; color:#55534d;">{{ v.text }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <div style="margin-top:34px; border-top:1px solid #e4e2db; padding-top:22px;">
+            <div style="font-size:13px; font-weight:600; color:#8a877f; margin-bottom:16px;">Margin</div>
+            <sc-for list="{{ f.notes }}" as="nt" hint-placeholder-count="0">
+              <div style="{{ nt.style }}">
+                <div style="{{ nt.tagStyle }}">{{ nt.tag }}</div>
+                <div style="font-size:15px; line-height:1.5; color:#38352f;">{{ nt.text }}</div>
+                <button onClick="{{ nt.onRemove }}" style="position:absolute; top:10px; right:11px; background:none; border:none; color:#c9c6bd; cursor:pointer; font-size:14px; line-height:1;" style-hover="color:#a8762f;">×</button>
+              </div>
+            </sc-for>
+            <div style="display:flex; gap:18px; margin:12px 0 10px;">
+              <sc-for list="{{ f.noteTypeOpts }}" as="nto" hint-placeholder-count="3">
+                <button onClick="{{ nto.onClick }}" style="{{ nto.style }}">{{ nto.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:flex; gap:14px; align-items:flex-end;">
+              <textarea value="{{ f.noteDraft }}" onInput="{{ f.setNoteDraft }}" placeholder="A note, a question, or an external suggestion…" style="flex:1; background:none; border:none; border-bottom:1px solid #e4e2db; color:#1a1a18; font-size:15px; line-height:1.5; padding:7px 0; outline:none; resize:none; min-height:30px;"></textarea>
+              <button onClick="{{ f.addNote }}" style="background:none; border:1px solid #d8d5cc; color:#55534d; font-size:13px; font-weight:500; padding:8px 15px; border-radius:2px; cursor:pointer; flex:none;" style-hover="border-color:#1a1a18; color:#1a1a18;">Pin</button>
+            </div>
+          </div>
+
+          <div style="margin-top:28px; padding-top:15px; border-top:1px solid #ecebe4; display:flex; justify-content:space-between; align-items:baseline;">
+            <span style="font-size:12px; font-weight:500; color:#adaa9f;">last changed {{ f.updatedWhen }}</span>
+            <span style="font-size:12px; font-weight:500; color:#adaa9f;">Author material</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- WORKS DRAWER -->
+  <sc-if value="{{ showStories }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ toggleStories }}" style="position:absolute; inset:0; z-index:30; background:rgba(30,28,24,0.28); animation:sd-dim .14s ease;"></div>
+    <aside style="position:absolute; top:0; left:0; bottom:0; z-index:31; width:396px; max-width:90vw; background:#f0efe9; border-right:1px solid #e4e2db; display:flex; flex-direction:column; animation:sd-slide .2s cubic-bezier(.2,.8,.2,1);">
+      <div style="padding:26px 28px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e4e2db;">
+        <div style="font-size:13px; font-weight:600; color:#8a877f;">Works</div>
+        <button onClick="{{ newStory }}" style="background:none; border:none; color:#1a1a18; cursor:pointer; font-size:13px; font-weight:600;" style-hover="opacity:0.6;">＋ New</button>
+      </div>
+      <div style="flex:1; overflow-y:auto; padding:8px 0 40px;">
+        <sc-for list="{{ storyList }}" as="s" hint-placeholder-count="1">
+          <div style="{{ s.style }}">
+            <div style="display:flex; align-items:baseline; gap:11px;">
+              <span style="font-size:11px; font-weight:500; color:#adaa9f; flex:none;">{{ s.idx }}</span>
+              <input value="{{ s.title }}" onInput="{{ s.onRename }}" style="flex:1; background:none; border:none; color:#1a1a18; font-size:18px; font-weight:600; outline:none; padding:0;" />
+            </div>
+            <div style="font-size:12px; font-weight:500; color:#adaa9f; margin:7px 0 11px; padding-left:22px;">{{ s.meta }}</div>
+            <div style="display:flex; gap:18px; padding-left:22px;">
+              <button onClick="{{ s.onOpen }}" style="{{ s.openStyle }}" style-hover="color:#1a1a18;">{{ s.openLabel }}</button>
+              <button onClick="{{ s.onDup }}" style="background:none; border:none; color:#adaa9f; cursor:pointer; font-size:12px; font-weight:500; padding:0;" style-hover="color:#1a1a18;">Duplicate</button>
+              <button onClick="{{ s.onArchive }}" style="background:none; border:none; color:#adaa9f; cursor:pointer; font-size:12px; font-weight:500; padding:0;" style-hover="color:#a8762f;">{{ s.archiveLabel }}</button>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </aside>
+  </sc-if>
+
+  <!-- EXPORT -->
+  <sc-if value="{{ showExport }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeExport }}" style="position:absolute; inset:0; z-index:40; background:rgba(30,28,24,0.34); display:flex; align-items:center; justify-content:center; padding:40px; animation:sd-dim .14s ease;">
+      <div onClick="{{ stop }}" style="width:800px; max-width:100%; max-height:100%; background:#faf9f6; border:1px solid #e4e2db; border-radius:3px; box-shadow:0 30px 80px -40px rgba(30,28,24,0.4); display:flex; flex-direction:column;">
+        <div style="padding:22px 26px; border-bottom:1px solid #e4e2db; display:flex; align-items:flex-end; justify-content:space-between;">
+          <div>
+            <div style="font-size:13px; font-weight:500; color:#adaa9f;">Export · for later tools</div>
+            <div style="font-size:22px; font-weight:600; color:#1a1a18; margin-top:4px;">{{ storyTitle }}</div>
+          </div>
+          <div style="display:flex; gap:20px;">
+            <button onClick="{{ setFmtMd }}" style="{{ mdTabStyle }}">Markdown</button>
+            <button onClick="{{ setFmtJson }}" style="{{ jsonTabStyle }}">JSON</button>
+          </div>
+        </div>
+        <div style="flex:1; overflow:auto; padding:24px 26px; background:#f1f0ea;">
+          <pre style="margin:0; font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:11.5px; line-height:1.7; color:#38352f; white-space:pre-wrap; word-break:break-word;">{{ exportText }}</pre>
+        </div>
+        <div style="padding:18px 26px; border-top:1px solid #e4e2db; display:flex; gap:24px; align-items:center;">
+          <button onClick="{{ copyExport }}" style="background:#1a1a18; border:none; color:#F4F4F1; font-size:14px; font-weight:500; padding:9px 18px; border-radius:2px; cursor:pointer;" style-hover="background:#3a3833;">{{ copyLabel }}</button>
+          <button onClick="{{ downloadExport }}" style="background:none; border:none; color:#1a1a18; font-size:14px; font-weight:500; padding:0; cursor:pointer;" style-hover="opacity:0.6;">Download {{ fmtExt }}</button>
+          <span style="flex:1;"></span>
+          <button onClick="{{ closeExport }}" style="background:none; border:none; color:#8a877f; font-size:14px; font-weight:500; padding:0; cursor:pointer;" style-hover="color:#1a1a18;">Close</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.metaP = [
+      ['premise','Premise'],['designingPrinciple','Designing Principle'],['bestCharacter','Best Character'],
+      ['conflict','Conflict'],['basicAction','Basic Action'],['characterChange','Character Change'],
+      ['moralChoice','Moral Choice'],['audienceAppeal','Audience Appeal'],['wishList','Wish List'],
+      ['possibilities','Possibilities'],['challenges','Challenges & Problems'],['moralArgument','Moral Argument'],
+      ['storyWorld','Story World'],
+    ];
+    this.metaC = [
+      ['char.weakness','Weakness'],['char.need','Need'],['char.desire','Desire'],['char.opponent','Opponent'],
+      ['char.plan','Plan'],['char.battle','Battle'],['char.selfRevelation','Self-Revelation'],['char.newEquilibrium','New Equilibrium'],
+    ];
+    this.labels = { '@plot': 'Plot' };
+    this.metaP.concat(this.metaC).forEach(([k, l]) => this.labels[k] = l);
+    this.groupOf = {};
+    this.metaP.forEach(([k]) => this.groupOf[k] = 'Premise Chapter');
+    this.metaC.forEach(([k]) => this.groupOf[k] = 'Character Structure');
+    this.weight = { premise: 3, designingPrinciple: 3, bestCharacter: 3, conflict: 3, basicAction: 2, characterChange: 2, moralChoice: 2, audienceAppeal: 2, '@plot': 2 };
+    this.verbs = ['causes','contradicts','requires','produces','forces','expresses','transforms','culminates in','obstructs','attracts','shapes'];
+    this.causalVerbs = ['causes','produces','transforms','forces','culminates in','shapes'];
+
+    this.LENSES = [
+      { id: 'story', name: 'Story', kind: 'map' },
+      { id: 'character', name: 'Character', kind: 'map' },
+      { id: 'moral', name: 'Moral', kind: 'map' },
+      { id: 'causal', name: 'Causal', kind: 'map' },
+      { id: 'plot', name: 'Plot', kind: 'work' },
+      { id: 'scenes', name: 'Scenes', kind: 'work' },
+      { id: 'memory', name: 'Memory', kind: 'memory' },
+    ];
+    // Gravity: each lens reads as vertical dependency columns, composed by relationship, not radial.
+    this.LAYOUT = {
+      story: { premise:{x:88,y:88}, designingPrinciple:{x:88,y:300}, conflict:{x:88,y:500}, moralChoice:{x:104,y:706}, bestCharacter:{x:568,y:88}, 'char.desire':{x:588,y:300}, 'char.opponent':{x:588,y:456}, basicAction:{x:568,y:600}, characterChange:{x:568,y:772} },
+      character: { bestCharacter:{x:96,y:80}, 'char.weakness':{x:96,y:280}, 'char.desire':{x:96,y:452}, 'char.opponent':{x:96,y:604}, characterChange:{x:96,y:772}, 'char.need':{x:568,y:280}, 'char.plan':{x:568,y:452}, 'char.battle':{x:568,y:604}, 'char.selfRevelation':{x:568,y:772}, 'char.newEquilibrium':{x:568,y:944} },
+      moral: { conflict:{x:104,y:88}, moralChoice:{x:104,y:304}, 'char.selfRevelation':{x:104,y:508}, moralArgument:{x:104,y:704}, audienceAppeal:{x:576,y:88}, characterChange:{x:576,y:300} },
+      causal: { designingPrinciple:{x:100,y:88}, conflict:{x:100,y:304}, moralChoice:{x:100,y:508}, bestCharacter:{x:576,y:88}, basicAction:{x:576,y:304}, '@plot':{x:576,y:480}, characterChange:{x:576,y:652} },
+    };
+    this.lensBlurbs = {
+      story: 'The architecture. Foundation near the centre of gravity; the unresolved drift at the edges.',
+      character: 'Who is changing, and what pressures them.  Weakness × Action = Change.',
+      moral: 'What the story argues.  The conflict that produces the choice.',
+      causal: 'What produces what.  Follow a change and watch it ripple.',
+    };
+    this.state = this.loadState();
+  }
+
+  rid() { return 'x' + Math.random().toString(36).slice(2, 9); }
+  mk(text, status, opts) {
+    opts = opts || {};
+    const now = Date.now();
+    const arr = opts.versions || [text];
+    const versions = arr.map((t, i) => ({ id: this.rid(), text: t, createdAt: now - (arr.length - 1 - i) * 86400000 }));
+    return { status, versions, current: versions.length - 1, updatedAt: now - (opts.age || 0), discoveredAt: null, review: null,
+      notes: (opts.notes || []).map(n => ({ id: this.rid(), type: n.type || 'note', text: n.text, createdAt: now })) };
+  }
+
+  seedStory() {
+    const f = {};
+    f.premise = this.mk("A teenager refuses the life that destroyed his brother and searches for a way to live that isn't based on achievement.", 'STRONG', { notes:[{ text:"Deeper premise: he is escaping an inherited definition of what it means to be a good person. What if the life everyone tells you is morally right requires you to betray yourself?" }] });
+    f.designingPrinciple = this.mk('', 'LOCKED', { versions:['Recovery as rebellion','Healing becomes contagious','Escape the inheritance — and let the healing become contagious.'], notes:[{ text:'Escape comes first; the transformation is witnessed and spreads. The system he is fighting has already been installed inside him.' }] });
+    f.bestCharacter = this.mk("An inherently honest young person whose childhood belief that ‘honesty is the best policy’ becomes increasingly important as he confronts inherited definitions of morality and success.", 'STRONG', { notes:[{ text:'Honest in principle, but unable to honestly live as himself. That contradiction is the personal moral engine.' }] });
+    f.conflict = this.mk("Inherited morality vs. authentic selfhood — ‘be the person we tell you is good’ vs. ‘be honest about the person you actually are.’", 'LOCKED');
+    f.basicAction = this.mk('He refuses to betray himself.', 'STRONG', { notes:[{ type:'question', text:'What repeated, concrete action makes “refusing to betray himself” dramatically visible?' }] });
+    f.characterChange = this.mk('A person who cannot stand up for himself becomes someone capable of living according to his own conscience.', 'STRONG', { notes:[{ text:'W × A = C. Weakness (cannot take a stand) × Action (refuses self-betrayal) = the changed person.' }] });
+    f.moralChoice = this.mk('He may give up old relationships rather than continue relationships that require self-betrayal.', 'WORKING', { notes:[{ text:'Keep working. The relationships must genuinely matter — love, belonging, history — or there is no real dilemma.' },{ type:'question', text:'What finally makes the moral choice unavoidable?' }] });
+    f.audienceAppeal = this.mk('The culturally specific conflict between family duty, sacrifice, achievement, compromise, and individual selfhood in an Indian context.', 'STRONG', { notes:[{ text:'Who am I allowed to become when the people who love me have already decided what a good life should look like?' }] });
+    f.wishList = this.mk('Recurring obsessions: escaping cultural conditioning; the rat race destroying play; conformity vs. the outsider; suppressed creativity discovered late; loss of innocence as the price of success; art, music, love and play as ways of being alive outside achievement.', 'WORKING', { notes:[{ text:'ADHD is NOT the audience appeal or the defining premise. It may belong to the character later only if it genuinely serves the story.' }] });
+    f.possibilities = this.mk('Possible, not committed: he finds love; learns to be alone without shame; friends question the race; an unconventional way to earn; recovery becomes contagious. One escapes → another sees it → another questions their inheritance → a group begins living differently.', 'WORKING');
+    f.challenges = this.mk("Family pressure to perform; the brother's success as family mythology; his suicide as an unbearable shadow; mental health misunderstood; therapy stopped as a financial burden; patriarchy and a suppressed mother; academic struggle and isolation; art called unsafe. The world's bargain: compromise yourself and receive approval, security, status, belonging.", 'WORKING');
+    f.moralArgument = this.mk('What does the story ultimately argue about what it means to live a good life?', 'OPEN');
+    f.storyWorld = this.mk('Where and how does this world physically embody achievement culture?', 'OPEN');
+    f['char.weakness'] = this.mk("Suffers internally; cannot take a stand; cannot express himself; has absorbed others' definitions of morality and success; afraid of disappointing people; believes his destiny may be predetermined by the path that destroyed his brother.", 'WORKING');
+    f['char.need'] = this.mk('To recognize his own worth and live according to his own conscience — to be honest as himself, not only in principle.', 'WORKING');
+    f['char.desire'] = this.mk('What concrete, external thing does he pursue?', 'OPEN');
+    f['char.opponent'] = this.mk('Who is the true opponent? The parents carry the conflict, but the deeper opponent may be the inherited morality itself.', 'OPEN');
+    f['char.plan'] = this.mk('How does he pursue the desire? Develops with the plot.', 'OPEN');
+    f['char.battle'] = this.mk('The final confrontation — not yet designed.', 'OPEN');
+    f['char.selfRevelation'] = this.mk('He recognizes his own goodness and worth, and that living honestly as himself is possible.', 'WORKING');
+    f['char.newEquilibrium'] = this.mk('He lives according to his own conscience; his healing becomes visible and gives others permission to question their own inheritance.', 'WORKING');
+
+    const relations = [
+      ['premise','expresses','designingPrinciple'],
+      ['designingPrinciple','transforms','bestCharacter'],
+      ['designingPrinciple','shapes','@plot'],
+      ['bestCharacter','expresses','conflict'],
+      ['conflict','forces','moralChoice'],
+      ['basicAction','produces','characterChange'],
+      ['char.weakness','obstructs','char.desire'],
+      ['char.desire','attracts','char.opponent'],
+      ['char.desire','contradicts','char.need'],
+      ['conflict','requires','basicAction'],
+    ].map(([from, verb, to]) => ({ id: this.rid(), from, verb, to }));
+
+    return { id: this.rid(), title: 'Escape the Inheritance', createdAt: Date.now(), archived: false, fields: f,
+      layouts: this.cloneLayouts(), relations, plot: [], scenes: [], symbols: [],
+      notes: [{ id: this.rid(), title: 'Premise Chapter', text: 'Complete — enough to move into the next Truby stage. Story DNA; let later work challenge it.', createdAt: Date.now() }] };
+  }
+  cloneLayouts() { return JSON.parse(JSON.stringify(this.LAYOUT)); }
+  seedBlank(title) {
+    const f = {};
+    this.metaP.concat(this.metaC).forEach(([k]) => { f[k] = this.mk('', 'OPEN'); });
+    return { id: this.rid(), title: title || 'Untitled Work', createdAt: Date.now(), archived: false, fields: f, layouts: this.cloneLayouts(), relations: [], plot: [], scenes: [], symbols: [], notes: [] };
+  }
+
+  freshUI() { return { lens: 'story', focusKey: null, panX: 72, panY: 28, scale: 0.76, showExport: false, exportFmt: 'md', showStories: false, noteType: 'note', noteDraft: '', newTitle: '', newText: '', copied: false, relVerb: 'causes', relTarget: '' }; }
+  loadState() {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem('storyDojo_v2')); } catch (e) {}
+    if (saved && saved.stories && saved.stories.length) return { stories: saved.stories, currentId: saved.currentId || saved.stories[0].id, ui: this.freshUI() };
+    const s = this.seedStory();
+    return { stories: [s], currentId: s.id, ui: this.freshUI() };
+  }
+  persist() { try { localStorage.setItem('storyDojo_v2', JSON.stringify({ stories: this.state.stories, currentId: this.state.currentId })); } catch (e) {} }
+  cur() { return this.state.stories.find(s => s.id === this.state.currentId) || this.state.stories[0]; }
+  commit() { this.setState({ stories: [...this.state.stories] }); this.persist(); }
+  setUI(patch) { this.setState({ ui: { ...this.state.ui, ...patch } }); }
+  curLens() { return this.LENSES.find(l => l.id === this.state.ui.lens) || this.LENSES[0]; }
+
+  componentDidMount() {
+    this._onMove = (e) => {
+      if (this._nodeDrag) {
+        const d = this._nodeDrag, sc = this.state.ui.scale;
+        const dx = (e.clientX - d.sx) / sc, dy = (e.clientY - d.sy) / sc;
+        if (Math.abs(e.clientX - d.sx) + Math.abs(e.clientY - d.sy) > 3) d.moved = true;
+        const lay = this.cur().layouts[d.lens]; lay[d.key] = { x: d.ox + dx, y: d.oy + dy };
+        this.setState({ stories: [...this.state.stories] });
+      } else if (this._pan) {
+        const p = this._pan; this.setUI({ panX: p.px + (e.clientX - p.sx), panY: p.py + (e.clientY - p.sy) });
+      }
+    };
+    this._onUp = () => {
+      if (this._nodeDrag) { const d = this._nodeDrag; this._nodeDrag = null; if (!d.moved) this.openFocus(d.key); else this.persist(); }
+      if (this._pan) this._pan = null;
+    };
+    window.addEventListener('mousemove', this._onMove);
+    window.addEventListener('mouseup', this._onUp);
+  }
+  componentWillUnmount() { window.removeEventListener('mousemove', this._onMove); window.removeEventListener('mouseup', this._onUp); }
+
+  onCanvasDown(e) { const u = this.state.ui; this._pan = { sx: e.clientX, sy: e.clientY, px: u.panX, py: u.panY }; }
+  onNodeDown(key, e) { e.stopPropagation(); const lens = this.state.ui.lens; const p = this.posOf(lens, key); this._nodeDrag = { key, lens, sx: e.clientX, sy: e.clientY, ox: p.x, oy: p.y, moved: false }; }
+  onWheel(e) { let s = this.state.ui.scale * (e.deltaY < 0 ? 1.08 : 0.925); s = Math.max(0.4, Math.min(1.7, s)); this.setUI({ scale: s }); }
+  zoomIn() { this.setUI({ scale: Math.min(1.7, this.state.ui.scale * 1.12) }); }
+  zoomOut() { this.setUI({ scale: Math.max(0.4, this.state.ui.scale * 0.9) }); }
+  resetView() { this.setUI({ panX: 72, panY: 28, scale: 0.76 }); }
+  posOf(lens, key) { const lay = this.cur().layouts[lens] || {}; return lay[key] || (this.LAYOUT[lens] && this.LAYOUT[lens][key]) || { x: 100, y: 100 }; }
+  lensKeys(lens) { return Object.keys(this.LAYOUT[lens] || {}); }
+
+  setLens(id) { this.setUI({ lens: id, focusKey: null, newTitle: '', newText: '' }); }
+  openFocus(key) { if (key[0] === '@') { this.setLens('plot'); return; } const f = this.cur().fields[key]; if (f && f.review) { f.review = null; this.commit(); } this.setUI({ focusKey: key, noteDraft: '', noteType: 'note', relVerb: 'causes', relTarget: '' }); }
+  closeFocus() { this.setUI({ focusKey: null }); }
+  toggleStories() { this.setUI({ showStories: !this.state.ui.showStories }); }
+
+  markRipples(key) { const s = this.cur(); s.relations.forEach(r => { if (r.from === key && this.causalVerbs.indexOf(r.verb) >= 0 && s.fields[r.to]) s.fields[r.to].review = { by: this.labels[key] || key, at: Date.now() }; }); }
+  setFieldText(key, text) { const f = this.cur().fields[key]; f.versions[f.current].text = text; f.updatedAt = Date.now(); this.markRipples(key); this.commit(); }
+  setStatus(key, st) { const f = this.cur().fields[key]; f.status = st; f.updatedAt = Date.now(); this.markRipples(key); this.commit(); }
+  toggleDiscovery(key) { const f = this.cur().fields[key]; f.discoveredAt = f.discoveredAt ? null : Date.now(); this.commit(); }
+  settleReview(key) { this.cur().fields[key].review = null; this.commit(); }
+  commitVersion(key) { const f = this.cur().fields[key]; f.versions.push({ id: this.rid(), text: f.versions[f.current].text, createdAt: Date.now() }); f.current = f.versions.length - 1; f.updatedAt = Date.now(); this.commit(); }
+  useVersion(key, idx) { this.cur().fields[key].current = idx; this.commit(); }
+  addNote(key) { const t = (this.state.ui.noteDraft || '').trim(); if (!t) return; this.cur().fields[key].notes.push({ id: this.rid(), type: this.state.ui.noteType || 'note', text: t, createdAt: Date.now() }); this.setUI({ noteDraft: '' }); this.commit(); }
+  removeNote(key, id) { const f = this.cur().fields[key]; f.notes = f.notes.filter(n => n.id !== id); this.commit(); }
+  addRelation(from) { const to = this.state.ui.relTarget, verb = this.state.ui.relVerb; if (!to || to === from) return; const s = this.cur(); if (s.relations.some(r => r.from === from && r.to === to && r.verb === verb)) return; s.relations.push({ id: this.rid(), from, verb, to }); this.setUI({ relTarget: '' }); this.commit(); }
+  removeRelation(id) { const s = this.cur(); s.relations = s.relations.filter(r => r.id !== id); this.commit(); }
+
+  collName() { return this.state.ui.lens === 'scenes' ? 'scenes' : 'plot'; }
+  addToList() { const name = this.collName(), t = (this.state.ui.newTitle || '').trim(), b = (this.state.ui.newText || '').trim(); if (!t && !b) return; this.cur()[name].push({ id: this.rid(), title: t || 'Untitled', text: b, createdAt: Date.now() }); this.setUI({ newTitle: '', newText: '' }); this.commit(); }
+  updateListItem(name, id, patch) { const it = this.cur()[name].find(x => x.id === id); if (it) Object.assign(it, patch); this.commit(); }
+  removeListItem(name, id) { const s = this.cur(); s[name] = s[name].filter(x => x.id !== id); this.commit(); }
+
+  newStory() { const s = this.seedBlank('Work ' + String(this.state.stories.length + 1).padStart(2, '0')); this.setState({ stories: [...this.state.stories, s], currentId: s.id, ui: { ...this.state.ui, showStories: false, lens: 'story', focusKey: null } }); this.persist(); }
+  dupStory(id) { const src = this.state.stories.find(x => x.id === id); const c = JSON.parse(JSON.stringify(src)); c.id = this.rid(); c.title = src.title + ' (copy)'; c.createdAt = Date.now(); c.archived = false; this.setState({ stories: [...this.state.stories, c], currentId: c.id }); this.persist(); }
+  openStory(id) { this.setState({ currentId: id, ui: { ...this.state.ui, showStories: false, focusKey: null } }); this.persist(); }
+  renameStory(id, title) { this.state.stories.find(x => x.id === id).title = title; this.commit(); }
+  archiveStory(id) { const s = this.state.stories.find(x => x.id === id); s.archived = !s.archived; if (s.archived && this.state.currentId === id) { const alt = this.state.stories.find(x => !x.archived && x.id !== id); if (alt) this.state.currentId = alt.id; } this.commit(); }
+
+  openExport() { this.setUI({ showExport: true, copied: false }); }
+  closeExport() { this.setUI({ showExport: false }); }
+  copyExport() { const t = this.exportTextNow(); if (navigator.clipboard) navigator.clipboard.writeText(t).then(() => { this.setUI({ copied: true }); setTimeout(() => this.setUI({ copied: false }), 1600); }); }
+  downloadExport() { const s = this.cur(), fmt = this.state.ui.exportFmt, text = this.exportTextNow(); const blob = new Blob([text], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = (s.title || 'story').replace(/[^a-z0-9]+/gi, '_') + (fmt === 'json' ? '.json' : '.md'); document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1500); }
+  exportTextNow() { const s = this.cur(); return this.state.ui.exportFmt === 'json' ? this.genJSON(s) : this.genMD(s); }
+
+  fmt(ts) { if (!ts) return '—'; const d = new Date(ts), mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()], p = n => String(n).padStart(2, '0'); return mon + ' ' + p(d.getDate()) + ', ' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()); }
+  ftext(f) { return f.versions[f.current].text; }
+  stateOf(f) { if (f.discoveredAt) return 'DISCOVERY'; if (f.status === 'LOCKED') return 'DECISION'; if (f.status === 'OPEN') return 'QUESTION'; return 'HYPOTHESIS'; }
+
+  genMD(s) {
+    const L = [], P = x => L.push(x);
+    P('# ' + s.title); P(''); P('_Story Dojo · Premise Chapter · exported ' + this.fmt(Date.now()) + '_'); P('');
+    const sect = (title, meta) => { P('## ' + title); P(''); meta.forEach(([k, label]) => { const f = s.fields[k]; P('### ' + label); P('`' + this.stateOf(f) + '` · v' + (f.current + 1) + ' · updated ' + this.fmt(f.updatedAt)); P(''); P(this.ftext(f) || '_(open)_'); P(''); if (f.versions.length > 1) { P('_Drafts:_'); f.versions.forEach((v, i) => P('- V' + (i + 1) + (i === f.current ? ' (current)' : '') + ': ' + v.text)); P(''); } f.notes.forEach(n => P('> [' + n.type + '] ' + n.text)); if (f.notes.length) P(''); }); };
+    sect('Premise Chapter', this.metaP); sect('Character Structure', this.metaC);
+    if (s.relations.length) { P('## Relationships'); P(''); s.relations.forEach(r => P('- ' + (this.labels[r.from] || r.from) + ' — ' + r.verb + ' → ' + (this.labels[r.to] || r.to))); P(''); }
+    const coll = (title, arr) => { if (!arr.length) return; P('## ' + title); P(''); arr.forEach(it => { P('### ' + it.title); P(it.text); P(''); }); };
+    coll('Plot', s.plot); coll('Scenes', s.scenes); coll('Notes', s.notes);
+    return L.join('\n');
+  }
+  fieldJSON(f) { return { text: this.ftext(f), state: this.stateOf(f), status: f.status, currentVersion: f.current + 1, updatedAt: new Date(f.updatedAt).toISOString(), versions: f.versions.map(v => ({ text: v.text, createdAt: new Date(v.createdAt).toISOString() })), notes: f.notes.map(n => ({ type: n.type, text: n.text })) }; }
+  genJSON(s) {
+    const F = {}; this.metaP.forEach(([k]) => { F[k] = this.fieldJSON(s.fields[k]); });
+    const ch = {}; this.metaC.forEach(([k]) => { ch[k.replace('char.', '')] = this.fieldJSON(s.fields[k]); });
+    const obj = { story: { title: s.title, id: s.id, createdAt: new Date(s.createdAt).toISOString(), stage: 'premise-chapter',
+      premise: F.premise, designingPrinciple: F.designingPrinciple, bestCharacter: F.bestCharacter, conflict: F.conflict,
+      basicAction: F.basicAction, characterChange: F.characterChange, moralChoice: F.moralChoice, audienceAppeal: F.audienceAppeal,
+      wishList: F.wishList, possibilities: F.possibilities, challenges: F.challenges, moralArgument: F.moralArgument, storyWorld: F.storyWorld,
+      character: ch,
+      sevenKeySteps: { weaknessNeed: ch.weakness, desire: ch.desire, opponent: ch.opponent, plan: ch.plan, battle: ch.battle, selfRevelation: ch.selfRevelation, newEquilibrium: ch.newEquilibrium },
+      relationships: s.relations.map(r => ({ from: this.labels[r.from] || r.from, verb: r.verb, to: this.labels[r.to] || r.to })),
+      plot: s.plot.map(x => ({ title: x.title, text: x.text })), scenes: s.scenes.map(x => ({ title: x.title, text: x.text })), notes: s.notes.map(x => ({ title: x.title, text: x.text })) } };
+    return JSON.stringify(obj, null, 2);
+  }
+
+  wt(key) { return this.weight[key] || 1; }
+  objText(key) { return key === '@plot' ? 'Not yet constructed — build it from the character.' : (this.ftext(this.cur().fields[key]) || '—'); }
+
+  // Certainty-as-ink grammar. Returns the small mark shown after the label.
+  markFor(st) {
+    if (st === 'DECISION') return { ch: '', style: { width: '7px', height: '7px', background: '#1a1a18', display: 'inline-block', flex: 'none', borderRadius: '1px' } };
+    if (st === 'HYPOTHESIS') return { ch: '', style: { width: '7px', height: '7px', border: '1.5px solid #adaa9f', display: 'inline-block', flex: 'none', borderRadius: '1px' } };
+    if (st === 'DISCOVERY') return { ch: '✦', style: { color: '#a8762f', fontSize: '11px', lineHeight: '1', flex: 'none' } };
+    return { ch: '?', style: { color: '#adaa9f', fontSize: '13px', fontWeight: 500, lineHeight: '1', flex: 'none' } };
+  }
+  // The margin spine encodes role; ink density encodes certainty.
+  spineFor(st) {
+    if (st === 'DECISION') return '2px solid #1a1a18';
+    if (st === 'HYPOTHESIS') return '2px solid #cfccc2';
+    if (st === 'DISCOVERY') return '2px solid #a8762f';
+    return '2px dotted #cfccc2';
+  }
+  bgFor(st) {
+    if (st === 'DECISION') return 'rgba(26,26,24,0.045)';
+    if (st === 'HYPOTHESIS') return 'rgba(26,26,24,0.022)';
+    if (st === 'DISCOVERY') return 'rgba(168,118,47,0.07)';
+    return 'transparent';
+  }
+  textStyleFor(st, w) {
+    const size = w === 3 ? 25 : w === 2 ? 20 : 16;
+    const clamp = w === 3 ? 4 : 3;
+    const base = { fontSize: size + 'px', lineHeight: '1.32', letterSpacing: '-0.01em', display: '-webkit-box', WebkitLineClamp: clamp, WebkitBoxOrient: 'vertical', overflow: 'hidden' };
+    if (st === 'DECISION') return { ...base, fontWeight: 500, color: '#1a1a18' };
+    if (st === 'DISCOVERY') return { ...base, fontWeight: 500, color: '#1a1a18' };
+    if (st === 'QUESTION') return { ...base, fontWeight: 400, fontStyle: 'italic', color: '#8a877f' };
+    return { ...base, fontWeight: 400, color: '#55534d' };
+  }
+
+  renderVals() {
+    const R = React, u = this.state.ui, s = this.cur(), lens = this.curLens();
+    const lensId = lens.id, isMap = lens.kind === 'map', isWork = lens.kind === 'work', isMemory = lens.kind === 'memory';
+
+    const lenses = this.LENSES.map(l => ({ name: l.name, onClick: () => this.setLens(l.id),
+      style: { background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0 5px', fontSize: '14px', fontWeight: u.lens === l.id ? 600 : 400, letterSpacing: '-0.005em', color: u.lens === l.id ? '#1a1a18' : '#8a877f', borderBottom: u.lens === l.id ? '1px solid #1a1a18' : '1px solid transparent', marginBottom: '-1px' } }));
+
+    // MAP
+    let mapObjects = [], mapLinesEl = null;
+    if (isMap) {
+      const keys = this.lensKeys(lensId);
+      mapObjects = keys.map(key => {
+        const isPlot = key === '@plot';
+        const f = isPlot ? null : s.fields[key];
+        const st = isPlot ? 'QUESTION' : this.stateOf(f);
+        const w = this.wt(key), pos = this.posOf(lensId, key), mk = this.markFor(st);
+        const maxW = w === 3 ? 316 : w === 2 ? 268 : 236;
+        const revisit = f && f.review, tag = isPlot ? 'later' : (revisit ? 'revisit' : (st === 'DISCOVERY' ? 'just now' : ''));
+        const size = w === 3 ? 25 : w === 2 ? 20 : 16, clamp = w === 3 ? 4 : 3;
+        const capacity = (maxW / (size * 0.5)) * clamp;
+        const truncated = (this.objText(key) || '').length > capacity;
+        const ts = this.textStyleFor(st, w);
+        if (truncated) { ts.WebkitMaskImage = 'linear-gradient(180deg,#000 64%,transparent)'; ts.maskImage = 'linear-gradient(180deg,#000 64%,transparent)'; }
+        return {
+          key, name: this.labels[key], text: this.objText(key),
+          wrap: { position: 'absolute', left: pos.x + 'px', top: pos.y + 'px', width: maxW + 'px', padding: '11px 15px 13px', borderLeft: this.spineFor(st), background: this.bgFor(st), cursor: 'grab', userSelect: 'none', transition: 'opacity .12s ease, background .12s ease' },
+          mark: mk.ch, markStyle: mk.style, textStyle: ts,
+          truncated, cueStyle: { fontSize: '11px', fontWeight: 500, color: '#adaa9f', marginTop: '3px' },
+          hasTag: !!tag, tag,
+          tagStyle: revisit
+            ? { fontSize: '11px', fontWeight: 600, color: '#a8762f', background: '#f2e6cf', padding: '1px 7px', borderRadius: '2px' }
+            : { fontSize: '11px', fontWeight: 500, color: st === 'DISCOVERY' ? '#a8762f' : '#adaa9f' },
+          onDown: (e) => this.onNodeDown(key, e),
+        };
+      });
+      const centerOf = (key) => { const p = this.posOf(lensId, key); const w = this.wt(key); return { x: p.x + (w === 3 ? 158 : w === 2 ? 134 : 118), y: p.y + 26 }; };
+      const visible = new Set(keys);
+      const els = [];
+      s.relations.forEach((r, i) => {
+        if (!visible.has(r.from) || !visible.has(r.to)) return;
+        const a = centerOf(r.from), b = centerOf(r.to);
+        const contra = r.verb === 'contradicts';
+        const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+        els.push(R.createElement('line', { key: 'l' + i, x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: contra ? '#c7a45f' : 'rgba(26,26,24,0.13)', strokeWidth: 1, strokeDasharray: contra ? '5 4' : 'none' }));
+        els.push(R.createElement('rect', { key: 'r' + i, x: mx - r.verb.length * 2.95 - 4, y: my - 7, width: r.verb.length * 5.9 + 8, height: 14, fill: '#F4F4F1' }));
+        els.push(R.createElement('text', { key: 't' + i, x: mx, y: my + 3, textAnchor: 'middle', fill: contra ? '#b98a3f' : '#b0ada3', style: { fontFamily: "'Hanken Grotesk',sans-serif", fontSize: '11px', fontWeight: 400 } }, r.verb));
+      });
+      mapLinesEl = R.createElement('svg', { width: 960, height: 1180, style: { position: 'absolute', left: 0, top: 0, overflow: 'visible', pointerEvents: 'none' } }, els);
+    }
+    const canvasStyle = { position: 'absolute', left: 0, top: 0, width: '960px', height: '1180px', transformOrigin: '0 0', transform: 'translate(' + u.panX + 'px,' + u.panY + 'px) scale(' + u.scale + ')' };
+
+    // MEMORY
+    let memoryRows = [];
+    if (isMemory) {
+      memoryRows = this.metaP.concat(this.metaC).map(([k, label]) => {
+        const f = s.fields[k], multi = f.versions.length > 1;
+        const chain = f.versions.map((v, i) => ({ n: 'V' + (i + 1), text: v.text || '—',
+          rowStyle: { display: 'flex', gap: '12px', padding: '5px 0', alignItems: 'baseline' },
+          textStyle: { fontSize: i === f.current ? '18px' : '15px', fontWeight: i === f.current ? 500 : 400, lineHeight: '1.35', fontStyle: i === f.current ? 'normal' : 'italic', color: i === f.current ? '#1a1a18' : '#adaa9f' } }));
+        return { name: label, meta: this.stateOf(f).toLowerCase() + ' · ' + (multi ? f.versions.length + ' drafts' : '1 draft') + ' · ' + this.fmt(f.updatedAt), chain, onOpen: () => { this.setUI({ lens: 'story' }); this.openFocus(k); } };
+      });
+    }
+
+    // FOCUS
+    let focusOn = false, f = {};
+    if (u.focusKey && s.fields[u.focusKey]) {
+      focusOn = true; const key = u.focusKey, fd = s.fields[key], st = this.stateOf(fd), w = this.wt(key), mk = this.markFor(st);
+      const stateLabels = { DECISION: 'decision', HYPOTHESIS: 'hypothesis', QUESTION: 'question', DISCOVERY: 'discovery' };
+      const linkBtn = (active) => ({ background: 'none', border: 'none', padding: '2px 0', cursor: 'pointer', fontSize: '14px', fontWeight: active ? 600 : 400, color: active ? '#1a1a18' : '#8a877f', borderBottom: active ? '2px solid #1a1a18' : '2px solid transparent' });
+      const stOpts = [['OPEN','Question'],['WORKING','Hypothesis'],['LOCKED','Decision']].map(([status, label]) => ({ label, onClick: () => this.setStatus(key, status), style: linkBtn(fd.status === status) }));
+      const noteStyle = (t) => ({ position: 'relative', marginBottom: '9px', padding: '12px 30px 12px 15px', borderRadius: '2px',
+        background: t === 'ai' ? '#f0ece2' : '#efeee9',
+        borderLeft: t === 'question' ? '2px solid #1a1a18' : (t === 'ai' ? '2px dashed #b9a583' : '2px solid #d8d5cc') });
+      const tagStyleFor = (t) => ({ fontSize: '11px', fontWeight: 600, marginBottom: '5px', color: t === 'question' ? '#1a1a18' : (t === 'ai' ? '#a8762f' : '#adaa9f') });
+      const tagFor = (t) => t === 'question' ? 'Question' : t === 'ai' ? 'External suggestion' : 'Note';
+      const rels = s.relations.filter(r => r.from === key || r.to === key).map(r => {
+        const out = r.from === key, other = out ? r.to : r.from, contra = r.verb === 'contradicts';
+        return { dir: out ? '' : '← ', verb: r.verb,
+          verbStyle: { fontSize: '13px', fontWeight: 600, color: contra ? '#a8762f' : '#8a877f', flex: 'none', width: '112px' },
+          otherName: this.labels[other] || other, otherText: (other === '@plot' ? 'not yet built' : this.ftext(s.fields[other]) || '—').slice(0, 66), onRemove: () => this.removeRelation(r.id) };
+      });
+      const targetOptions = this.metaP.concat(this.metaC).filter(([k2]) => k2 !== key).map(([k2, l2]) => ({ key: k2, label: l2 })).concat([{ key: '@plot', label: 'Plot' }]);
+      f = {
+        sheetStyle: { background: '#faf9f6', border: '1px solid #e4e2db', borderRadius: '3px', boxShadow: '0 24px 70px -36px rgba(30,28,24,0.42)', padding: '36px 42px 32px' },
+        name: this.labels[key], stateLabel: stateLabels[st], mark: mk.ch, markStyle: mk.style,
+        text: this.ftext(fd), onText: (e) => this.setFieldText(key, e.target.value),
+        editStyle: { width: '100%', background: 'transparent', border: 'none', outline: 'none', resize: 'vertical', color: '#1a1a18', fontWeight: st === 'DECISION' ? 500 : 400, fontSize: (w === 3 ? 27 : 23) + 'px', lineHeight: '1.34', letterSpacing: '-0.015em', minHeight: '92px', fontStyle: st === 'QUESTION' ? 'italic' : 'normal' },
+        stateOptions: stOpts, updatedWhen: this.fmt(fd.updatedAt),
+        hasReview: !!fd.review, reviewText: fd.review ? (fd.review.by + ' changed — does this still hold?') : '', settle: () => this.settleReview(key),
+        toggleDiscovery: () => this.toggleDiscovery(key), discoveryStyle: linkBtn(!!fd.discoveredAt),
+        commitVersion: () => this.commitVersion(key),
+        relations: rels, verbOptions: this.verbs, targetOptions, relVerb: u.relVerb, relTarget: u.relTarget,
+        setRelVerb: (e) => this.setUI({ relVerb: e.target.value }), setRelTarget: (e) => this.setUI({ relTarget: e.target.value }), addRelation: () => this.addRelation(key),
+        hasDrafts: fd.versions.length > 1,
+        versions: fd.versions.map((v, i) => ({ n: 'V' + (i + 1), currentTag: i === fd.current ? ' · current' : '', when: this.fmt(v.createdAt), text: v.text, onUse: () => this.useVersion(key, i),
+          style: { padding: '12px 14px', marginBottom: '7px', cursor: 'pointer', borderRadius: '2px', background: i === fd.current ? '#f1ede3' : '#efeee9', border: '1px solid ' + (i === fd.current ? '#c9bfa4' : '#e4e2db') } })),
+        notes: fd.notes.map(n => ({ tag: tagFor(n.type), tagStyle: tagStyleFor(n.type), text: n.text, style: noteStyle(n.type), onRemove: () => this.removeNote(key, n.id) })),
+        noteTypeOpts: [['note','Note'],['question','Question'],['ai','AI suggestion']].map(([v, label]) => ({ label, onClick: () => this.setUI({ noteType: v }), style: linkBtn(u.noteType === v) })),
+        noteDraft: u.noteDraft || '', setNoteDraft: (e) => this.setUI({ noteDraft: e.target.value }), addNote: () => this.addNote(key),
+      };
+    }
+
+    // WORKS
+    const active = this.state.stories.filter(x => !x.archived), arch = this.state.stories.filter(x => x.archived);
+    const storyList = active.concat(arch).map((st2) => {
+      const isCur = st2.id === this.state.currentId;
+      const nLocked = Object.keys(st2.fields).filter(k => st2.fields[k].status === 'LOCKED').length;
+      const nOpen = Object.keys(st2.fields).filter(k => st2.fields[k].status === 'OPEN').length;
+      const idxN = active.indexOf(st2);
+      return { idx: idxN >= 0 ? String(idxN + 1).padStart(2, '0') : '—', title: st2.title,
+        meta: (st2.archived ? 'archived · ' : '') + nLocked + ' decided · ' + nOpen + ' open · ' + this.fmt(st2.createdAt),
+        style: { padding: '15px 28px 17px', background: isCur ? '#eae8e0' : 'transparent', borderLeft: '2px solid ' + (isCur ? '#a8762f' : 'transparent'), opacity: st2.archived ? 0.5 : 1 },
+        onRename: (e) => this.renameStory(st2.id, e.target.value), onOpen: () => this.openStory(st2.id), onDup: () => this.dupStory(st2.id), onArchive: () => this.archiveStory(st2.id),
+        openLabel: isCur ? 'Open now' : 'Open', archiveLabel: st2.archived ? 'Restore' : 'Archive',
+        openStyle: { background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: isCur ? '#a8762f' : '#8a877f' } };
+    });
+
+    const collName = lensId === 'scenes' ? 'scenes' : 'plot';
+    const collItems = (s[collName] || []).map(it => ({ tag: collName === 'scenes' ? 'scene' : 'beat', title: it.title, text: it.text,
+      onTitle: (e) => this.updateListItem(collName, it.id, { title: e.target.value }), onText: (e) => this.updateListItem(collName, it.id, { text: e.target.value }), onRemove: () => this.removeListItem(collName, it.id) }));
+
+    const idxNum = active.indexOf(s) >= 0 ? active.indexOf(s) + 1 : this.state.stories.indexOf(s) + 1;
+    const tabLink = (active2) => ({ background: 'none', border: 'none', padding: '2px 0', cursor: 'pointer', fontSize: '14px', fontWeight: active2 ? 600 : 400, color: active2 ? '#1a1a18' : '#8a877f', borderBottom: active2 ? '2px solid #1a1a18' : '2px solid transparent' });
+
+    return {
+      storyTitle: s.title, storyIndex: 'Work ' + String(idxNum).padStart(2, '0'),
+      lenses, isMap, isWork, isMemory,
+      mapObjects, mapLinesEl, canvasStyle,
+      onCanvasDown: (e) => this.onCanvasDown(e), onWheel: (e) => this.onWheel(e),
+      zoomIn: () => this.zoomIn(), zoomOut: () => this.zoomOut(), resetView: () => this.resetView(), scaleLabel: Math.round(u.scale * 100) + '%',
+      lensBlurb: this.lensBlurbs[lensId] || '',
+      memoryRows,
+      workKicker: collName === 'scenes' ? 'Scene board · later stage' : 'Plot · later stage',
+      workTitle: collName === 'scenes' ? 'Scenes' : 'Plot',
+      workBlurb: collName === 'scenes' ? 'A scene board for when the structure is ready. Each scene will connect back to character, desire, conflict, plot step, moral argument and symbol.' : 'Turn the character structure into events — when you are ready. Place provisional beats here; nothing commits until you decide it does.',
+      workTitlePh: collName === 'scenes' ? 'Scene title…' : 'Beat / plot event…',
+      collItems, collEmpty: collItems.length === 0,
+      newTitle: u.newTitle || '', newText: u.newText || '', setNewTitle: (e) => this.setUI({ newTitle: e.target.value }), setNewText: (e) => this.setUI({ newText: e.target.value }), addToList: () => this.addToList(),
+      focusOn, f, closeFocus: () => this.closeFocus(), stop: (e) => e.stopPropagation(),
+      showStories: u.showStories, toggleStories: () => this.toggleStories(), storyList, newStory: () => this.newStory(),
+      showExport: u.showExport, openExport: () => this.openExport(), closeExport: () => this.closeExport(), exportText: this.exportTextNow(),
+      setFmtMd: () => this.setUI({ exportFmt: 'md' }), setFmtJson: () => this.setUI({ exportFmt: 'json' }),
+      mdTabStyle: tabLink(u.exportFmt === 'md'), jsonTabStyle: tabLink(u.exportFmt === 'json'),
+      fmtExt: u.exportFmt === 'json' ? '.json' : '.md', copyExport: () => this.copyExport(), downloadExport: () => this.downloadExport(), copyLabel: u.copied ? 'Copied' : 'Copy structured story',
+    };
+  }
+}
+</script>
+</body>
+</html>

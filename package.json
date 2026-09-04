@@ -1,0 +1,10 @@
+{
+  "name": "story-dojo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A thinking tool for building story structure — premise, character, and plot, seen through shifting lenses.",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  }
+}

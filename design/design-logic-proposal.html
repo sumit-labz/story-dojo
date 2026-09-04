@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,500;1,6..72,300&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,600&family=Instrument+Serif:ital@0;1&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #efe8da; }
+  ::selection { background: rgba(156,59,40,0.18); }
+</style>
+</helmet>
+<div style="min-height:100vh; background:#efe8da; color:#1b1815; font-family:'Public Sans',system-ui,sans-serif; -webkit-font-smoothing:antialiased; padding:0 0 120px;">
+
+  <!-- MASTHEAD -->
+  <div style="max-width:1040px; margin:0 auto; padding:56px 48px 0;">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid #1b1815; padding-bottom:14px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.24em; text-transform:uppercase; color:#1b1815;">Story&nbsp;Dojo</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:#8a8072;">Design&nbsp;Logic&nbsp;·&nbsp;proposal&nbsp;before&nbsp;rebuild</div>
+    </div>
+    <h1 style="font-family:'Fraunces',serif; font-optical-sizing:auto; font-weight:400; font-size:60px; line-height:1.02; letter-spacing:-0.02em; margin:38px 0 0; max-width:14ch;">The aesthetic is a consequence of the thinking model.</h1>
+    <p style="font-family:'Newsreader',serif; font-size:20px; line-height:1.5; color:#4a453c; max-width:60ch; margin:26px 0 0;">Not a skin over the old map. Below is the visual grammar the rebuild will use — how a thought, a question, a decision, a contradiction and a relationship each look different, and how the same story is seen through different lenses. Pick the editorial voice at the bottom.</p>
+  </div>
+
+  <!-- WHAT CHANGES -->
+  <div style="max-width:1040px; margin:74px auto 0; padding:0 48px;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:#8a8072; margin-bottom:26px;">01 — What changes, and why</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:#d3c9b6;">
+      <sc-for list="{{ changes }}" as="c" hint-placeholder-count="6">
+        <div style="background:#efe8da; padding:22px 26px 24px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:#9c3b28; margin-bottom:12px;">{{ c.tag }}</div>
+          <div style="font-family:'Newsreader',serif; font-size:15px; line-height:1.5; color:#7a7365; text-decoration:line-through; text-decoration-color:#c3b9a6; margin-bottom:9px;">{{ c.was }}</div>
+          <div style="font-family:'Fraunces',serif; font-weight:500; font-size:20px; line-height:1.28; letter-spacing:-0.01em; color:#1b1815;">{{ c.now }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- TYPOGRAPHY: THOUGHT IS LARGE, METADATA IS TINY -->
+  <div style="max-width:1040px; margin:80px auto 0; padding:0 48px;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:#8a8072; margin-bottom:8px;">02 — Typography carries the hierarchy of thought</div>
+    <p style="font-family:'Newsreader',serif; font-size:18px; line-height:1.5; color:#4a453c; max-width:64ch; margin:0 0 34px;">Three registers, three kinds of knowing. The author's idea has visual authority; the machinery is whisper-quiet. Your Designing Principle, set in five candidate editorial faces — same words, so the voice is the only variable.</p>
+
+    <sc-for list="{{ faces }}" as="f" hint-placeholder-count="5">
+      <div style="border-top:1px solid #d8cfbf; padding:28px 0;">
+        <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:16px;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; color:#1b1815;">{{ f.name }}</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; color:#9a9082;">{{ f.note }}</span>
+        </div>
+        <div style="{{ f.style }}">Escape the inheritance <span style="{{ f.emStyle }}">— and let the healing become contagious.</span></div>
+      </div>
+    </sc-for>
+
+    <div style="border-top:1px solid #d8cfbf; padding:26px 0 0; margin-top:6px; display:flex; gap:40px; flex-wrap:wrap;">
+      <div>
+        <div style="font-family:'Public Sans',sans-serif; font-weight:500; font-size:15px; color:#1b1815;">Public Sans — interface</div>
+        <div style="font-family:'Public Sans',sans-serif; font-size:13px; color:#7a7365; margin-top:4px;">Controls, navigation, buttons. Neutral, not startup-generic.</div>
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.06em; color:#1b1815;">IBM Plex Mono — metadata</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7a7365; margin-top:5px;">V03 · LOCKED · 14 MAR · causes → · consequence</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EPISTEMIC GRAMMAR -->
+  <div style="max-width:1040px; margin:82px auto 0; padding:0 48px;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:#8a8072; margin-bottom:8px;">03 — Six ways of knowing (not four status pills)</div>
+    <p style="font-family:'Newsreader',serif; font-size:18px; line-height:1.5; color:#4a453c; max-width:62ch; margin:0 0 30px;">Weight and treatment encode certainty, so you can feel the state of an idea before you read it. No coloured badges — the object itself tells you.</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 44px;">
+
+      <div style="border-top:1px solid #1b1815; padding:20px 0 22px;">
+        <div style="display:flex; align-items:center; gap:9px; margin-bottom:12px;"><span style="width:11px; height:11px; background:#1b1815; display:inline-block;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#1b1815;">DECISION</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9a9082;">committed</span></div>
+        <div style="font-family:'Fraunces',serif; font-weight:600; font-size:22px; line-height:1.25; color:#1b1815;">Inherited morality vs. authentic selfhood.</div>
+      </div>
+
+      <div style="border-top:1px solid #b8ad99; padding:20px 0 22px;">
+        <div style="display:flex; align-items:center; gap:9px; margin-bottom:12px;"><span style="width:11px; height:11px; border:1.5px solid #6a6456; display:inline-block;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6a6456;">HYPOTHESIS</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9a9082;">currently believe</span></div>
+        <div style="font-family:'Fraunces',serif; font-weight:400; font-size:21px; line-height:1.28; color:#3d382f;">He gives up old relationships rather than betray himself.</div>
+      </div>
+
+      <div style="border-top:1px solid #b8ad99; padding:20px 0 22px;">
+        <div style="display:flex; align-items:center; gap:9px; margin-bottom:12px;"><span style="font-family:'Fraunces',serif; font-size:15px; color:#9c3b28; line-height:1;">?</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#9c3b28;">QUESTION</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9a9082;">being investigated</span></div>
+        <div style="font-family:'Newsreader',serif; font-style:italic; font-weight:300; font-size:21px; line-height:1.35; color:#6a6456;">Who is the true opponent?</div>
+        <div style="height:1px; width:120px; background:repeating-linear-gradient(90deg,#b8ad99 0 5px,transparent 5px 10px); margin-top:8px;"></div>
+      </div>
+
+      <div style="border-top:1px solid #b8ad99; padding:20px 0 22px;">
+        <div style="display:flex; align-items:center; gap:9px; margin-bottom:12px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#9c3b28; line-height:1;">⚡</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#9c3b28;">TENSION</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9a9082;">cannot both be true</span></div>
+        <div style="font-family:'Fraunces',serif; font-weight:400; font-size:18px; line-height:1.3; color:#3d382f;">Honesty is his virtue<span style="color:#9c3b28; padding:0 8px;">✕</span>he cannot live honestly.</div>
+      </div>
+
+      <div style="border-top:1px solid #b8ad99; padding:20px 0 22px;">
+        <div style="display:flex; align-items:center; gap:9px; margin-bottom:12px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#6a6456; line-height:1;">└→</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6a6456;">CONSEQUENCE</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9a9082;">produced by another</span></div>
+        <div style="padding-left:20px; border-left:1px solid #b8ad99;"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.1em; color:#9a9082; margin-bottom:5px;">FROM · DESIGNING PRINCIPLE</div><div style="font-family:'Fraunces',serif; font-weight:400; font-size:20px; line-height:1.28; color:#3d382f;">Healing becomes contagious.</div></div>
+      </div>
+
+      <div style="border-top:2px solid #9c3b28; padding:20px 0 22px;">
+        <div style="display:flex; align-items:center; gap:9px; margin-bottom:12px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#9c3b28; line-height:1;">✦</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#9c3b28;">DISCOVERY</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9a9082;">just realized · an event</span></div>
+        <div style="font-family:'Fraunces',serif; font-weight:500; font-size:21px; line-height:1.26; color:#1b1815;">The opponent is the inheritance itself.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RELATIONSHIPS -->
+  <div style="max-width:1040px; margin:82px auto 0; padding:0 48px;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:#8a8072; margin-bottom:8px;">04 — A connection is an argument, not a wire</div>
+    <p style="font-family:'Newsreader',serif; font-size:18px; line-height:1.5; color:#4a453c; max-width:62ch; margin:0 0 30px;">You draw a line, then name why. The verb becomes part of the thinking — and when an element changes, everything it touches is flagged as needing a second look.</p>
+    <div style="display:flex; flex-wrap:wrap; gap:9px; margin-bottom:34px;">
+      <sc-for list="{{ verbs }}" as="v" hint-placeholder-count="8">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:#4a453c; border:1px solid #c3b9a6; padding:6px 11px;">{{ v }}</span>
+      </sc-for>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:0; align-items:center; border:1px solid #d8cfbf; padding:26px 30px;">
+      <div style="text-align:right;"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.12em; color:#9a9082; margin-bottom:6px;">DESIGNING PRINCIPLE</div><div style="font-family:'Fraunces',serif; font-weight:500; font-size:22px; line-height:1.2; color:#1b1815;">Escape the inheritance.</div></div>
+      <div style="text-align:center; padding:0 26px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; color:#9c3b28;">TRANSFORMS</div><div style="height:1px; background:#9c3b28; margin-top:7px; position:relative;"><span style="position:absolute; right:-1px; top:-3px; color:#9c3b28; font-size:11px;">▸</span></div></div>
+      <div style="text-align:left;"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.12em; color:#9a9082; margin-bottom:6px;">BEST CHARACTER</div><div style="font-family:'Fraunces',serif; font-weight:400; font-size:22px; line-height:1.2; color:#3d382f;">The honest boy who cannot be honest.</div></div>
+    </div>
+  </div>
+
+  <!-- LENSES -->
+  <div style="max-width:1040px; margin:82px auto 0; padding:0 48px;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:#8a8072; margin-bottom:8px;">05 — Lenses, not pages</div>
+    <p style="font-family:'Newsreader',serif; font-size:18px; line-height:1.5; color:#4a453c; max-width:62ch; margin:0 0 30px;">The map does not always show everything. One story, re-composed by what you're thinking about right now. Switching a lens re-arranges the same elements — it does not navigate to another module.</p>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:#d3c9b6;">
+      <sc-for list="{{ lenses }}" as="l" hint-placeholder-count="4">
+        <div style="background:#efe8da; padding:22px 20px 26px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:#9c3b28; margin-bottom:16px;">{{ l.name }}</div>
+          <sc-for list="{{ l.steps }}" as="st" hint-placeholder-count="4">
+            <div style="font-family:'Fraunces',serif; font-weight:400; font-size:16px; line-height:1.15; color:#2a251e; margin-bottom:3px;">{{ st }}</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#b0a690; margin-bottom:3px;">↓</div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- COMPOSITION -->
+  <div style="max-width:1040px; margin:82px auto 0; padding:0 48px;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:#8a8072; margin-bottom:8px;">06 — Gravity, not symmetry</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center; margin-top:20px;">
+      <p style="font-family:'Newsreader',serif; font-size:18px; line-height:1.55; color:#4a453c; margin:0;">The old map distributed nodes on a mirrored spine — which read as machine-generated. The rebuild seeds an intentional composition: foundation elements sit as heavy masses near a center of gravity; character and transformation are held in tension around them; unresolved questions drift lighter at the edges. Then <em style="font-style:normal; border-bottom:1px solid #9c3b28;">you move things, and your arrangement persists.</em></p>
+      <div style="position:relative; height:230px; border:1px solid #d8cfbf;">
+        <div style="position:absolute; left:34%; top:40%; font-family:'Fraunces',serif; font-weight:600; font-size:24px; color:#1b1815;">Premise</div>
+        <div style="position:absolute; left:30%; top:62%; font-family:'Fraunces',serif; font-weight:500; font-size:19px; color:#2a251e;">Designing Principle</div>
+        <div style="position:absolute; left:63%; top:26%; font-family:'Fraunces',serif; font-size:15px; color:#5a5348;">Character</div>
+        <div style="position:absolute; left:70%; top:50%; font-family:'Newsreader',serif; font-style:italic; font-size:13px; color:#9a9082;">opponent?</div>
+        <div style="position:absolute; left:12%; top:22%; font-family:'Newsreader',serif; font-style:italic; font-size:12px; color:#b0a690;">desire?</div>
+        <div style="position:absolute; left:58%; top:76%; font-family:'Fraunces',serif; font-size:14px; color:#5a5348;">Moral Choice</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DECISION -->
+  <div style="max-width:1040px; margin:90px auto 0; padding:34px 48px 0; border-top:1px solid #1b1815;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:#9c3b28; margin-bottom:14px;">One choice, then I build</div>
+    <div style="font-family:'Fraunces',serif; font-weight:400; font-size:28px; line-height:1.25; max-width:24ch; color:#1b1815;">Which editorial voice should carry the story? Tell me in the form — then the rebuild begins.</div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const line = "Escape the inheritance ";
+    const faceStyle = (fam, wght, size, ls) => ({ fontFamily: "'" + fam + "',serif", fontWeight: wght, fontSize: size + 'px', lineHeight: 1.14, letterSpacing: (ls || 0) + 'em', color: '#1b1815', fontOpticalSizing: 'auto' });
+    return {
+      changes: [
+        { tag: 'The ground', was: 'Dark graphite canvas + grain', now: 'Warm editorial paper. Dark + tiny type had become its own AI look.' },
+        { tag: 'The hierarchy', was: 'Label loud, thought tiny', now: 'The thought is large and has authority; metadata shrinks to a whisper.' },
+        { tag: 'The elements', was: 'Everything a dotted rounded card', now: 'Typographic objects — statements, questions, fragments, anchors. Cards only where a card earns it.' },
+        { tag: 'The map', was: 'Symmetric node graph, all visible', now: 'Composed by gravity, seen through lenses. It rarely shows everything at once.' },
+        { tag: 'The states', was: 'Four coloured status pills', now: 'Six ways of knowing — decision, hypothesis, question, tension, consequence, discovery.' },
+        { tag: 'The lines', was: 'Wires the software drew', now: 'Named arguments — causes, contradicts, transforms — that flag ripples when an idea changes.' },
+      ],
+      faces: [
+        { name: 'Fraunces', note: 'expressive, editorial — your suggestion', style: faceStyle('Fraunces', 500, 40, -0.02), emStyle: "font-family:'Fraunces',serif; font-weight:400; font-style:italic; color:#4a453c;" },
+        { name: 'Newsreader', note: 'literary, warm, closest to New York', style: faceStyle('Newsreader', 500, 40, -0.01), emStyle: "font-family:'Newsreader',serif; font-weight:300; font-style:italic; color:#4a453c;" },
+        { name: 'Source Serif 4', note: 'quiet, precise, architectural', style: faceStyle('Source Serif 4', 600, 38, -0.01), emStyle: "font-family:'Source Serif 4',serif; font-weight:300; font-style:normal; color:#4a453c;" },
+        { name: 'Instrument Serif', note: 'display, dramatic, high-contrast', style: faceStyle('Instrument Serif', 400, 46, 0), emStyle: "font-family:'Instrument Serif',serif; font-style:italic; color:#4a453c;" },
+        { name: 'Libre Caslon Text', note: 'classical, booky, sober', style: faceStyle('Libre Caslon Text', 400, 38, 0), emStyle: "font-family:'Libre Caslon Text',serif; font-style:italic; color:#4a453c;" },
+      ],
+      verbs: ['causes', 'contradicts', 'requires', 'produces', 'forces', 'expresses', 'transforms', 'culminates in'],
+      lenses: [
+        { name: 'Story', steps: ['Premise', 'Designing Principle', 'Character', 'Conflict', 'Change'] },
+        { name: 'Character', steps: ['Best Character', 'Weakness', 'Desire', 'Opponent', 'Change'] },
+        { name: 'Moral', steps: ['Inherited morality', 'Conflict', 'Moral Choice', 'Self-revelation'] },
+        { name: 'Causal', steps: ['Designing Principle', 'Basic Action', 'Plot', 'Battle', 'Change'] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

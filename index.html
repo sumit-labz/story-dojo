@@ -43,6 +43,10 @@
         <button onClick="{{ l.onClick }}" style="{{ l.style }}" style-hover="color:#1a1a18;">{{ l.name }}</button>
       </sc-for>
     </nav>
+    <sc-if value="{{ showSpineMeter }}" hint-placeholder-val="{{ false }}">
+      <div style="font-size:12px; font-weight:500; color:#a8762f; flex:none; white-space:nowrap;">Spine {{ spineLabel }}</div>
+    </sc-if>
+    <button onClick="{{ openOnboarding }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:14px; font-weight:500; color:#8a877f; flex:none;" style-hover="color:#1a1a18;">Guide</button>
     <button onClick="{{ openExport }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:14px; font-weight:500; color:#8a877f; flex:none;" style-hover="color:#1a1a18;">Export</button>
   </header>
 
@@ -54,7 +58,7 @@
         <div style="{{ canvasStyle }}">
           {{ mapLinesEl }}
           <sc-for list="{{ mapObjects }}" as="o" hint-placeholder-count="8">
-            <div onMouseDown="{{ o.onDown }}" style="{{ o.wrap }}" style-hover="opacity:0.72;">
+            <div onMouseDown="{{ o.onDown }}" title="{{ o.titleAttr }}" style="{{ o.wrap }}" style-hover="opacity:0.72;">
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px;">
                 <span style="font-size:13px; font-weight:500; color:#8a877f; white-space:nowrap;">{{ o.name }}</span>
                 <span style="{{ o.markStyle }}">{{ o.mark }}</span>
@@ -77,6 +81,12 @@
           <button onClick="{{ resetView }}" style="background:none; border:none; color:#adaa9f; cursor:pointer; font-size:13px; font-weight:500; padding:0 0 0 6px;" style-hover="color:#1a1a18;">Recenter</button>
         </div>
         <div style="position:absolute; left:32px; top:22px; z-index:6; font-size:14px; color:#adaa9f; max-width:360px; line-height:1.5;">{{ lensBlurb }}</div>
+        <sc-if value="{{ hasSuggestion }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ openSuggestion }}" style="position:absolute; left:32px; top:70px; z-index:6; font-size:13px; color:#a8762f; max-width:340px; line-height:1.5; cursor:pointer;" style-hover="opacity:0.7;">{{ suggestionText }}</div>
+        </sc-if>
+        <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; left:50%; bottom:28px; transform:translateX(-50%); z-index:7; background:#1a1a18; color:#F4F4F1; font-size:13px; font-weight:500; padding:10px 18px; border-radius:3px; animation:sd-dim .2s ease;">{{ toastText }}</div>
+        </sc-if>
       </div>
     </sc-if>
 
@@ -155,6 +165,15 @@
             </div>
             <button onClick="{{ closeFocus }}" style="background:none; border:none; cursor:pointer; font-size:13px; font-weight:500; color:#8a877f;" style-hover="color:#1a1a18;">Close</button>
           </div>
+
+          <sc-if value="{{ f.hasConceptDef }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#efeee9; border-radius:2px; padding:14px 16px; margin-bottom:20px;">
+              <div style="font-size:14px; line-height:1.5; color:#55534d;">{{ f.conceptDef }}</div>
+              <sc-for list="{{ f.examples }}" as="ex" hint-placeholder-count="2">
+                <div style="font-size:13px; line-height:1.5; color:#8a877f; margin-top:8px; padding-left:14px; border-left:2px solid #d8d5cc;">{{ ex.text }}</div>
+              </sc-for>
+            </div>
+          </sc-if>
 
           <sc-if value="{{ f.hasReview }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; align-items:center; gap:14px; background:#f6ecd8; border-left:2px solid #a8762f; padding:11px 14px; margin-bottom:24px; border-radius:2px;">
@@ -240,6 +259,55 @@
             <span style="font-size:12px; font-weight:500; color:#adaa9f;">last changed {{ f.updatedWhen }}</span>
             <span style="font-size:12px; font-weight:500; color:#adaa9f;">Author material</span>
           </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ONBOARDING -->
+  <sc-if value="{{ ob.on }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ ob.skip }}" style="position:absolute; inset:0; z-index:24; background:rgba(30,28,24,0.32); animation:sd-dim .16s ease;"></div>
+    <div style="position:absolute; inset:0; z-index:25; display:flex; justify-content:center; align-items:center; overflow-y:auto; padding:40px 20px; pointer-events:none;">
+      <div onClick="{{ obStop }}" style="pointer-events:auto; width:620px; max-width:94vw; background:#faf9f6; border:1px solid #e4e2db; border-radius:3px; box-shadow:0 24px 70px -36px rgba(30,28,24,0.42); padding:44px 48px 36px; animation:sd-zoom .22s cubic-bezier(.2,.8,.2,1);">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+          <div style="font-size:12px; font-weight:600; color:#a8762f; text-transform:uppercase; letter-spacing:0.04em;">{{ ob.kicker }}</div>
+          <button onClick="{{ ob.skip }}" style="background:none; border:none; cursor:pointer; font-size:12px; font-weight:500; color:#adaa9f;" style-hover="color:#1a1a18;">{{ ob.skipLabel }}</button>
+        </div>
+        <h2 style="font-size:26px; font-weight:600; letter-spacing:-0.015em; color:#1a1a18; margin:0 0 12px; line-height:1.22;">{{ ob.headline }}</h2>
+        <p style="font-size:15px; line-height:1.55; color:#55534d; margin:0 0 26px;">{{ ob.sub }}</p>
+
+        <sc-if value="{{ ob.step0 }}" hint-placeholder-val="{{ true }}">
+          <textarea value="{{ ob.premiseText }}" onInput="{{ ob.onPremise }}" placeholder="A person who ___." style="width:100%; background:#efeee9; border:none; border-radius:2px; color:#1a1a18; font-size:19px; font-weight:500; line-height:1.4; padding:16px 18px; outline:none; resize:none; min-height:76px;"></textarea>
+        </sc-if>
+
+        <sc-if value="{{ ob.step1 }}" hint-placeholder-val="{{ false }}">
+          <sc-for list="{{ ob.questions }}" as="q" hint-placeholder-count="3">
+            <div style="margin-bottom:20px;">
+              <div style="font-size:14px; font-weight:600; color:#1a1a18; margin-bottom:4px;">{{ q.label }}</div>
+              <div style="font-size:13px; color:#8a877f; margin-bottom:8px;">{{ q.hint }}</div>
+              <textarea value="{{ q.text }}" onInput="{{ q.onInput }}" placeholder="{{ q.placeholder }}" style="width:100%; background:#efeee9; border:none; border-radius:2px; color:#1a1a18; font-size:15px; line-height:1.5; padding:11px 14px; outline:none; resize:none; min-height:52px;"></textarea>
+            </div>
+          </sc-for>
+        </sc-if>
+
+        <sc-if value="{{ ob.step2 }}" hint-placeholder-val="{{ false }}">
+          <sc-for list="{{ ob.summary }}" as="sm" hint-placeholder-count="5">
+            <div style="display:flex; align-items:baseline; gap:12px; padding:10px 0; border-top:1px solid #ecebe4;">
+              <span style="{{ sm.markStyle }}"></span>
+              <span style="font-size:13px; font-weight:600; color:#8a877f; width:132px; flex:none;">{{ sm.label }}</span>
+              <span style="font-size:14px; color:#55534d; line-height:1.4;">{{ sm.text }}</span>
+            </div>
+          </sc-for>
+          <div style="font-size:14px; color:#8a877f; margin-top:18px; line-height:1.5;">The other 16 elements are there when you want them — nothing here is final, and a question left open is still progress.</div>
+        </sc-if>
+
+        <div style="display:flex; align-items:center; gap:16px; margin-top:30px;">
+          <sc-if value="{{ ob.showBack }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ ob.back }}" style="background:none; border:none; cursor:pointer; font-size:14px; font-weight:500; color:#8a877f; padding:9px 4px;" style-hover="color:#1a1a18;">Back</button>
+          </sc-if>
+          <span style="flex:1;"></span>
+          <span style="font-size:12px; font-weight:500; color:#c9c6bd;">{{ ob.stepLabel }}</span>
+          <button onClick="{{ ob.next }}" style="background:#1a1a18; border:none; color:#F4F4F1; font-size:14px; font-weight:500; padding:10px 22px; border-radius:2px; cursor:pointer;" style-hover="background:#3a3833;">{{ ob.nextLabel }}</button>
         </div>
       </div>
     </div>
@@ -347,6 +415,76 @@ class Component extends DCLogic {
       moral: 'What the story argues.  The conflict that produces the choice.',
       causal: 'What produces what.  Follow a change and watch it ripple.',
     };
+
+    // The five elements a first-time visitor should touch before anything else.
+    this.ESSENTIAL = ['premise', 'bestCharacter', 'conflict', 'basicAction', 'characterChange'];
+
+    // Plain-language teaching layer: what each element is, why it matters, and two famous anchors.
+    this.concepts = {
+      premise: { def: 'Your story in one sentence — a person, and the situation that will change them.', examples: [
+        'The Godfather — The reluctant youngest son of a mafia family becomes the ruthless don he swore he’d never be.',
+        'The Lion King — A young prince flees his kingdom after his father’s death, then returns to claim who he really is.' ] },
+      designingPrinciple: { def: 'The single image or process that organizes how the whole story is told — not the plot, the shape underneath it.', examples: [
+        'Harry Potter — A boy becomes a man as he journeys through seven years of magical school.',
+        'Moby-Dick — A man goes on a hunt for a whale that is really a hunt for the meaning of life.' ] },
+      bestCharacter: { def: 'Whose want, and whose change, the story is really about.', examples: [
+        'Breaking Bad — A dying chemistry teacher who wants to provide for his family, and discovers he likes power.',
+        'Toy Story — A favorite toy whose place is threatened by a shinier newcomer.' ] },
+      conflict: { def: 'Not just the obstacle — the clash of values underneath it.', examples: [
+        'Pride and Prejudice — Pride and social judgment vs. honest feeling.',
+        'The Dark Knight — Order and rules vs. chaos and fear.' ] },
+      basicAction: { def: 'The one thing your hero does, over and over, in pursuit of what they want.', examples: [
+        'Finding Nemo — A father crosses an ocean, refusing to give up on his son.',
+        'The Shawshank Redemption — A man quietly, patiently refuses to be broken.' ] },
+      characterChange: { def: 'Weakness, put through action, becomes a new person: W × A = C.', examples: [
+        'Groundhog Day — A cynic (W) relives one day helping others (A) and becomes someone capable of love (C).',
+        'A Christmas Carol — A miser confronts his life and becomes generous.' ] },
+      moralChoice: { def: 'The final decision that proves who they’ve become — and it has to cost them something real.', examples: [
+        'Casablanca — He gives up the woman he loves so she can do greater good.',
+        'The Hunger Games — She threatens a double suicide rather than kill her ally.' ] },
+      audienceAppeal: { def: 'The specific, felt reason an audience leans in — the wound or hope this story speaks to.', examples: [
+        'Rocky — the underdog who gets one shot appeals to anyone who’s felt overlooked.',
+        'The Farewell — a family hiding the truth to protect someone they love, told across cultures.' ] },
+      wishList: { def: 'The obsessions and images you keep circling back to, whether or not they "belong" in the story yet.', examples: [
+        'Almost Famous grew from Cameron Crowe’s own teenage obsession with music journalism.',
+        'Jaws grew from Spielberg’s fascination with an unseen, ordinary-world threat.' ] },
+      possibilities: { def: 'Directions you might take the story — not commitments, just open doors.', examples: [
+        'Early Pixar notebooks for Up considered many old-man-and-a-boy pairings before the balloon house.',
+        'Early drafts of Star Wars had Luke as a woman, and a very different ending.' ] },
+      challenges: { def: 'The pressures and forces working against your character, inside the story world.', examples: [
+        'In Lady Bird, financial strain and a mother’s fear pull against her daughter’s wish to leave.',
+        'In Little Miss Sunshine, a failing family business shadows every mile of the trip.' ] },
+      moralArgument: { def: 'What the story, taken as a whole, argues about how to live.', examples: [
+        'It’s a Wonderful Life argues that one ordinary life quietly holds up many others.',
+        'There Will Be Blood argues that ambition, followed far enough, devours everything around it.' ] },
+      storyWorld: { def: 'How the physical world embodies the story’s themes — not just where it happens, but what it means.', examples: [
+        'Parasite’s houses (basement, semi-basement, hillside mansion) make class conflict literally vertical.',
+        'Mad Max: Fury Road’s desert scarcity makes water and fuel the currency of every relationship.' ] },
+      'char.weakness': { def: 'The inner flaw that holds your character back before the story forces them to grow.', examples: [
+        'Elizabeth Bennet’s pride blinds her to Darcy’s true character.',
+        'Woody’s need to be the favorite makes him cruel to Buzz.' ] },
+      'char.need': { def: 'What your character must learn or become to fix that weakness — usually the thing they resist admitting.', examples: [
+        'Michael Corleone needs to accept who his family truly made him, not who he wants to be.',
+        'Elsa needs to stop hiding what makes her different.' ] },
+      'char.desire': { def: 'The concrete, external thing they are chasing — you should be able to picture it.', examples: [
+        'The Wizard of Oz — to get home to Kansas.',
+        'Raiders of the Lost Ark — to find the Ark before the Nazis.' ] },
+      'char.opponent': { def: 'Who wants the same thing, or blocks it — and forces your hero to grow by opposing them well.', examples: [
+        'Amadeus — Salieri, whose envy of Mozart drives the story.',
+        'Whiplash — the teacher who both breaks and forges the student.' ] },
+      'char.plan': { def: 'How the character actually intends to get what they want — the strategy, however flawed.', examples: [
+        'In Legally Blonde, Elle’s plan is to follow Warner to Harvard Law to win him back.',
+        'In Die Hard, John’s plan is to pick off the terrorists one at a time, alone, from inside the vents.' ] },
+      'char.battle': { def: 'The climactic confrontation where the deepest conflict finally plays out, in the open.', examples: [
+        'Kill Bill — the Bride and O-Ren Ishii’s duel in the snow settles what words could not.',
+        'A Few Good Men — the courtroom cross-examination is the whole story’s battle in miniature.' ] },
+      'char.selfRevelation': { def: 'What the hero finally understands about themselves — the truth the whole story was building toward.', examples: [
+        'Star Wars — Luke learns to trust himself and the Force over the machine.',
+        'Frozen — love, not fear, is what controls her power.' ] },
+      'char.newEquilibrium': { def: 'Who your character is now that the story is over — the new normal they earned.', examples: [
+        'Ebenezer Scrooge ends A Christmas Carol living generously, as a matter of course.',
+        'Elizabeth Bennet ends Pride and Prejudice able to trust her own judgment of character.' ] },
+    };
     this.state = this.loadState();
   }
 
@@ -397,7 +535,7 @@ class Component extends DCLogic {
       ['conflict','requires','basicAction'],
     ].map(([from, verb, to]) => ({ id: this.rid(), from, verb, to }));
 
-    return { id: this.rid(), title: 'Escape the Inheritance', createdAt: Date.now(), archived: false, fields: f,
+    return { id: this.rid(), title: 'Escape the Inheritance', createdAt: Date.now(), archived: false, fields: f, onboarded: true,
       layouts: this.cloneLayouts(), relations, plot: [], scenes: [], symbols: [],
       notes: [{ id: this.rid(), title: 'Premise Chapter', text: 'Complete — enough to move into the next Truby stage. Story DNA; let later work challenge it.', createdAt: Date.now() }] };
   }
@@ -405,10 +543,10 @@ class Component extends DCLogic {
   seedBlank(title) {
     const f = {};
     this.metaP.concat(this.metaC).forEach(([k]) => { f[k] = this.mk('', 'OPEN'); });
-    return { id: this.rid(), title: title || 'Untitled Work', createdAt: Date.now(), archived: false, fields: f, layouts: this.cloneLayouts(), relations: [], plot: [], scenes: [], symbols: [], notes: [] };
+    return { id: this.rid(), title: title || 'Untitled Work', createdAt: Date.now(), archived: false, fields: f, onboarded: false, layouts: this.cloneLayouts(), relations: [], plot: [], scenes: [], symbols: [], notes: [] };
   }
 
-  freshUI() { return { lens: 'story', focusKey: null, panX: 72, panY: 28, scale: 0.76, showExport: false, exportFmt: 'md', showStories: false, noteType: 'note', noteDraft: '', newTitle: '', newText: '', copied: false, relVerb: 'causes', relTarget: '' }; }
+  freshUI() { return { lens: 'story', focusKey: null, panX: 72, panY: 28, scale: 0.76, showExport: false, exportFmt: 'md', showStories: false, noteType: 'note', noteDraft: '', newTitle: '', newText: '', copied: false, relVerb: 'causes', relTarget: '', onboardOpen: false, onboardStep: 0, toast: null }; }
   loadState() {
     let saved = null;
     try { saved = JSON.parse(localStorage.getItem('storyDojo_v2')); } catch (e) {}
@@ -453,12 +591,36 @@ class Component extends DCLogic {
   lensKeys(lens) { return Object.keys(this.LAYOUT[lens] || {}); }
 
   setLens(id) { this.setUI({ lens: id, focusKey: null, newTitle: '', newText: '' }); }
+
+  // ---- Onboarding: one sentence, then the three questions that matter most ----
+  openOnboarding() { this.setUI({ onboardOpen: true, onboardStep: 0, focusKey: null, showStories: false }); }
+  closeOnboarding() { const s = this.cur(); s.onboarded = true; this.setUI({ onboardOpen: false }); this.commit(); }
+  onboardNext() { const step = this.state.ui.onboardStep; if (step >= 2) { this.closeOnboarding(); return; } this.setUI({ onboardStep: step + 1 }); }
+  onboardBack() { this.setUI({ onboardStep: Math.max(0, this.state.ui.onboardStep - 1) }); }
+  onboardField(key, e) { const f = this.cur().fields[key]; const text = e.target.value; f.versions[f.current].text = text; f.updatedAt = Date.now(); if (text.trim() && f.status === 'OPEN') f.status = 'WORKING'; this.commit(); }
+
+  showToast(text) { this.setUI({ toast: text }); if (this._toastT) clearTimeout(this._toastT); this._toastT = setTimeout(() => this.setUI({ toast: null }), 3200); }
+  essentialCount() { const s = this.cur(); return this.ESSENTIAL.filter(k => (this.ftext(s.fields[k]) || '').trim()).length; }
+  nextSuggestedKey() {
+    const s = this.cur();
+    const open = this.ESSENTIAL.find(k => !(this.ftext(s.fields[k]) || '').trim());
+    if (open) return open;
+    return this.metaP.concat(this.metaC).map(x => x[0]).find(k => !(this.ftext(s.fields[k]) || '').trim());
+  }
   openFocus(key) { if (key[0] === '@') { this.setLens('plot'); return; } const f = this.cur().fields[key]; if (f && f.review) { f.review = null; this.commit(); } this.setUI({ focusKey: key, noteDraft: '', noteType: 'note', relVerb: 'causes', relTarget: '' }); }
   closeFocus() { this.setUI({ focusKey: null }); }
   toggleStories() { this.setUI({ showStories: !this.state.ui.showStories }); }
 
   markRipples(key) { const s = this.cur(); s.relations.forEach(r => { if (r.from === key && this.causalVerbs.indexOf(r.verb) >= 0 && s.fields[r.to]) s.fields[r.to].review = { by: this.labels[key] || key, at: Date.now() }; }); }
-  setFieldText(key, text) { const f = this.cur().fields[key]; f.versions[f.current].text = text; f.updatedAt = Date.now(); this.markRipples(key); this.commit(); }
+  setFieldText(key, text) {
+    const f = this.cur().fields[key];
+    const wasEmpty = !(f.versions[f.current].text || '').trim();
+    f.versions[f.current].text = text; f.updatedAt = Date.now(); this.markRipples(key); this.commit();
+    if (wasEmpty && text.trim() && this.ESSENTIAL.indexOf(key) >= 0) {
+      const n = this.essentialCount();
+      if (n === this.ESSENTIAL.length) this.showToast('Your story’s spine is in place. The rest is play.');
+    }
+  }
   setStatus(key, st) { const f = this.cur().fields[key]; f.status = st; f.updatedAt = Date.now(); this.markRipples(key); this.commit(); }
   toggleDiscovery(key) { const f = this.cur().fields[key]; f.discoveredAt = f.discoveredAt ? null : Date.now(); this.commit(); }
   settleReview(key) { this.cur().fields[key].review = null; this.commit(); }
@@ -474,7 +636,7 @@ class Component extends DCLogic {
   updateListItem(name, id, patch) { const it = this.cur()[name].find(x => x.id === id); if (it) Object.assign(it, patch); this.commit(); }
   removeListItem(name, id) { const s = this.cur(); s[name] = s[name].filter(x => x.id !== id); this.commit(); }
 
-  newStory() { const s = this.seedBlank('Work ' + String(this.state.stories.length + 1).padStart(2, '0')); this.setState({ stories: [...this.state.stories, s], currentId: s.id, ui: { ...this.state.ui, showStories: false, lens: 'story', focusKey: null } }); this.persist(); }
+  newStory() { const s = this.seedBlank('Work ' + String(this.state.stories.length + 1).padStart(2, '0')); this.setState({ stories: [...this.state.stories, s], currentId: s.id, ui: { ...this.freshUI(), showStories: false, lens: 'story', focusKey: null, onboardOpen: true, onboardStep: 0 } }); this.persist(); }
   dupStory(id) { const src = this.state.stories.find(x => x.id === id); const c = JSON.parse(JSON.stringify(src)); c.id = this.rid(); c.title = src.title + ' (copy)'; c.createdAt = Date.now(); c.archived = false; this.setState({ stories: [...this.state.stories, c], currentId: c.id }); this.persist(); }
   openStory(id) { this.setState({ currentId: id, ui: { ...this.state.ui, showStories: false, focusKey: null } }); this.persist(); }
   renameStory(id, title) { this.state.stories.find(x => x.id === id).title = title; this.commit(); }
@@ -516,7 +678,13 @@ class Component extends DCLogic {
   }
 
   wt(key) { return this.weight[key] || 1; }
-  objText(key) { return key === '@plot' ? 'Not yet constructed — build it from the character.' : (this.ftext(this.cur().fields[key]) || '—'); }
+  objText(key) {
+    if (key === '@plot') return 'Not yet constructed — build it from the character.';
+    const t = this.ftext(this.cur().fields[key]);
+    if (t) return t;
+    const c = this.concepts[key];
+    return c ? c.def : '—';
+  }
 
   // Certainty-as-ink grammar. Returns the small mark shown after the label.
   markFor(st) {
@@ -556,6 +724,7 @@ class Component extends DCLogic {
       style: { background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0 5px', fontSize: '14px', fontWeight: u.lens === l.id ? 600 : 400, letterSpacing: '-0.005em', color: u.lens === l.id ? '#1a1a18' : '#8a877f', borderBottom: u.lens === l.id ? '1px solid #1a1a18' : '1px solid transparent', marginBottom: '-1px' } }));
 
     // MAP
+    const essentialDone = this.essentialCount(), essentialTotal = this.ESSENTIAL.length, spineComplete = essentialDone >= essentialTotal;
     let mapObjects = [], mapLinesEl = null;
     if (isMap) {
       const keys = this.lensKeys(lensId);
@@ -565,15 +734,18 @@ class Component extends DCLogic {
         const st = isPlot ? 'QUESTION' : this.stateOf(f);
         const w = this.wt(key), pos = this.posOf(lensId, key), mk = this.markFor(st);
         const maxW = w === 3 ? 316 : w === 2 ? 268 : 236;
-        const revisit = f && f.review, tag = isPlot ? 'later' : (revisit ? 'revisit' : (st === 'DISCOVERY' ? 'just now' : ''));
+        const isEssential = this.ESSENTIAL.indexOf(key) >= 0;
+        const revisit = f && f.review;
+        const tag = isPlot ? 'later' : (revisit ? 'revisit' : (st === 'DISCOVERY' ? 'just now' : (!isEssential && !spineComplete && !(f && (this.ftext(f)||'').trim()) ? 'go deeper later' : '')));
         const size = w === 3 ? 25 : w === 2 ? 20 : 16, clamp = w === 3 ? 4 : 3;
         const capacity = (maxW / (size * 0.5)) * clamp;
         const truncated = (this.objText(key) || '').length > capacity;
         const ts = this.textStyleFor(st, w);
         if (truncated) { ts.WebkitMaskImage = 'linear-gradient(180deg,#000 64%,transparent)'; ts.maskImage = 'linear-gradient(180deg,#000 64%,transparent)'; }
+        const dim = !isPlot && !isEssential && !spineComplete && !(f && (this.ftext(f)||'').trim());
         return {
-          key, name: this.labels[key], text: this.objText(key),
-          wrap: { position: 'absolute', left: pos.x + 'px', top: pos.y + 'px', width: maxW + 'px', padding: '11px 15px 13px', borderLeft: this.spineFor(st), background: this.bgFor(st), cursor: 'grab', userSelect: 'none', transition: 'opacity .12s ease, background .12s ease' },
+          key, name: this.labels[key], text: this.objText(key), titleAttr: (this.concepts[key] && this.concepts[key].def) || '',
+          wrap: { position: 'absolute', left: pos.x + 'px', top: pos.y + 'px', width: maxW + 'px', padding: '11px 15px 13px', borderLeft: this.spineFor(st), background: this.bgFor(st), cursor: 'grab', userSelect: 'none', opacity: dim ? 0.48 : 1, transition: 'opacity .12s ease, background .12s ease' },
           mark: mk.ch, markStyle: mk.style, textStyle: ts,
           truncated, cueStyle: { fontSize: '11px', fontWeight: 500, color: '#adaa9f', marginTop: '3px' },
           hasTag: !!tag, tag,
@@ -630,9 +802,12 @@ class Component extends DCLogic {
           otherName: this.labels[other] || other, otherText: (other === '@plot' ? 'not yet built' : this.ftext(s.fields[other]) || '—').slice(0, 66), onRemove: () => this.removeRelation(r.id) };
       });
       const targetOptions = this.metaP.concat(this.metaC).filter(([k2]) => k2 !== key).map(([k2, l2]) => ({ key: k2, label: l2 })).concat([{ key: '@plot', label: 'Plot' }]);
+      const concept = this.concepts[key] || { def: '', examples: [] };
       f = {
         sheetStyle: { background: '#faf9f6', border: '1px solid #e4e2db', borderRadius: '3px', boxShadow: '0 24px 70px -36px rgba(30,28,24,0.42)', padding: '36px 42px 32px' },
         name: this.labels[key], stateLabel: stateLabels[st], mark: mk.ch, markStyle: mk.style,
+        conceptDef: concept.def, hasConceptDef: !!concept.def,
+        examples: concept.examples.map(ex => ({ text: ex })),
         text: this.ftext(fd), onText: (e) => this.setFieldText(key, e.target.value),
         editStyle: { width: '100%', background: 'transparent', border: 'none', outline: 'none', resize: 'vertical', color: '#1a1a18', fontWeight: st === 'DECISION' ? 500 : 400, fontSize: (w === 3 ? 27 : 23) + 'px', lineHeight: '1.34', letterSpacing: '-0.015em', minHeight: '92px', fontStyle: st === 'QUESTION' ? 'italic' : 'normal' },
         stateOptions: stOpts, updatedWhen: this.fmt(fd.updatedAt),
@@ -672,6 +847,30 @@ class Component extends DCLogic {
     const idxNum = active.indexOf(s) >= 0 ? active.indexOf(s) + 1 : this.state.stories.indexOf(s) + 1;
     const tabLink = (active2) => ({ background: 'none', border: 'none', padding: '2px 0', cursor: 'pointer', fontSize: '14px', fontWeight: active2 ? 600 : 400, color: active2 ? '#1a1a18' : '#8a877f', borderBottom: active2 ? '2px solid #1a1a18' : '2px solid transparent' });
 
+    // ONBOARDING view-model
+    const step = u.onboardStep || 0;
+    const q3 = (key, label, hint, placeholder) => { const fd = s.fields[key]; return { key, label, hint, placeholder, text: this.ftext(fd), onInput: (e) => this.onboardField(key, e) }; };
+    const ob = {
+      on: !!u.onboardOpen,
+      kicker: step === 0 ? 'Start here · step 1 of 3' : step === 1 ? 'Start here · step 2 of 3' : 'Start here · step 3 of 3',
+      headline: step === 0 ? 'Forget structure for a second.' : step === 1 ? 'Three questions, and that\'s plenty for today.' : 'You\'ve got a spine. The rest is play.',
+      sub: step === 0 ? 'In one line, what\'s your story about? It doesn\'t have to be right — it just has to be a start.'
+        : step === 1 ? 'Answer what you can. "I don\'t know yet" is a fine answer — leave it blank and it\'s marked an open question, not a failure.'
+        : 'The map has 21 elements. You\'ve touched the ones that matter most first. Everything else opens when you\'re ready for it.',
+      step0: step === 0, step1: step === 1, step2: step === 2,
+      premiseText: this.ftext(s.fields.premise), onPremise: (e) => this.onboardField('premise', e),
+      questions: [
+        q3('bestCharacter', 'Who\'s it about?', 'Your protagonist — even a rough sketch is enough.', 'A person who…'),
+        q3('conflict', 'What do they want, and what\'s in the way?', 'The clash underneath the plot.', 'They want ___, but ___.'),
+        q3('characterChange', 'How might they be different by the end?', 'Guess. You can change your mind later.', 'They start as ___ and become ___.'),
+      ],
+      summary: this.ESSENTIAL.map(k => { const fd = s.fields[k]; const st = this.stateOf(fd); const mk = this.markFor(st); return { label: this.labels[k], text: this.ftext(fd) || 'Still open — that\'s fine.', markStyle: mk.style }; }),
+      showBack: step > 0, back: () => this.onboardBack(),
+      stepLabel: (step + 1) + ' of 3',
+      next: () => this.onboardNext(), nextLabel: step === 2 ? 'See the map' : 'Continue',
+      skip: () => this.closeOnboarding(), skipLabel: step === 0 ? 'I know this — skip' : 'Skip for now',
+    };
+
     return {
       storyTitle: s.title, storyIndex: 'Work ' + String(idxNum).padStart(2, '0'),
       lenses, isMap, isWork, isMemory,
@@ -692,6 +891,11 @@ class Component extends DCLogic {
       setFmtMd: () => this.setUI({ exportFmt: 'md' }), setFmtJson: () => this.setUI({ exportFmt: 'json' }),
       mdTabStyle: tabLink(u.exportFmt === 'md'), jsonTabStyle: tabLink(u.exportFmt === 'json'),
       fmtExt: u.exportFmt === 'json' ? '.json' : '.md', copyExport: () => this.copyExport(), downloadExport: () => this.downloadExport(), copyLabel: u.copied ? 'Copied' : 'Copy structured story',
+      ob, obStop: (e) => e.stopPropagation(), openOnboarding: () => this.openOnboarding(),
+      showSpineMeter: isMap, spineLabel: essentialDone + '/' + essentialTotal,
+      hasSuggestion: isMap && lensId === 'story' && !spineComplete, suggestionText: (() => { const nk = this.nextSuggestedKey(); return nk ? 'Next up — ' + this.labels[nk] : ''; })(),
+      openSuggestion: () => { const nk = this.nextSuggestedKey(); if (nk) this.openFocus(nk); },
+      hasToast: !!u.toast, toastText: u.toast || '',
     };
   }
 }

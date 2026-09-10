@@ -195,6 +195,75 @@
         </div>
       </div>
     </sc-if>
+
+    <!-- MONOLOGUE STUDIO -->
+    <sc-if value="{{ isMonologue }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; overflow-y:auto; background:#F4F4F1;">
+        <div style="max-width:940px; margin:0 auto; padding:56px 44px 120px; display:flex; gap:48px; align-items:flex-start;">
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:13px; font-weight:500; color:#a8762f; margin-bottom:14px;">Monologue Studio · one voice, one moment</div>
+            <h1 style="font-size:34px; font-weight:600; letter-spacing:-0.02em; color:#1a1a18; margin:0 0 12px; line-height:1.05;">Hear them speak.</h1>
+            <p style="font-size:16px; line-height:1.55; color:#55534d; max-width:60ch; margin:0 0 8px;">{{ md.characterLine }}</p>
+            <p style="font-size:14px; line-height:1.55; color:#8a877f; max-width:60ch; margin:0 0 30px;">Once the character holds, this is where they get to say the thing they can't say anywhere else in the story. Pick a shape, fill in the pressure, then just write — the frame is a scaffold, not a fill-in-the-blanks form.</p>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:26px;">
+              <sc-for list="{{ md.modes }}" as="m" hint-placeholder-count="4">
+                <button onClick="{{ m.onClick }}" style="{{ m.style }}">
+                  <div style="font-size:14px; font-weight:600; color:#1a1a18; margin-bottom:3px;">{{ m.name }}</div>
+                  <div style="font-size:12px; color:#8a877f; line-height:1.4;">{{ m.desc }}</div>
+                </button>
+              </sc-for>
+            </div>
+            <div style="font-size:12px; color:#a8762f; font-weight:500; margin:-14px 0 26px;">Shape: {{ md.curModeShape }}</div>
+
+            <div style="font-size:13px; font-weight:600; color:#8a877f; margin-bottom:12px;">PIVOT — the beats, not the lines</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:30px;">
+              <sc-for list="{{ md.pivot }}" as="pv" hint-placeholder-count="5">
+                <div>
+                  <div style="font-size:13px; font-weight:600; color:#1a1a18; margin-bottom:2px;">{{ pv.label }}</div>
+                  <div style="font-size:11px; color:#adaa9f; margin-bottom:6px; line-height:1.4;">{{ pv.hint }}</div>
+                  <textarea value="{{ pv.value }}" onInput="{{ pv.onInput }}" readOnly="{{ md.readOnly }}" style="width:100%; background:#efeee9; border:none; border-radius:2px; color:#1a1a18; font-size:14px; line-height:1.5; padding:9px 11px; outline:none; resize:none; min-height:52px;"></textarea>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="font-size:13px; font-weight:600; color:#8a877f; margin-bottom:12px;">The draft</div>
+            <textarea value="{{ md.text }}" onInput="{{ md.onText }}" readOnly="{{ md.readOnly }}" placeholder="Present tense. First person. No stage directions. Read it aloud as you go." style="width:100%; background:#faf9f6; border:1px solid #e4e2db; border-radius:2px; color:#1a1a18; font-size:18px; line-height:1.6; padding:20px 22px; outline:none; resize:vertical; min-height:220px;"></textarea>
+
+            <div style="display:flex; align-items:center; gap:20px; margin-top:18px; flex-wrap:wrap;">
+              <sc-for list="{{ md.stateOptions }}" as="so" hint-placeholder-count="3">
+                <button onClick="{{ so.onClick }}" style="{{ so.style }}">{{ so.label }}</button>
+              </sc-for>
+              <span style="flex:1;"></span>
+              <button onClick="{{ md.commitVersion }}" style="background:none; border:none; color:#8a877f; font-size:13px; font-weight:500; cursor:pointer;" style-hover="color:#1a1a18;">＋ Keep as draft</button>
+            </div>
+
+            <sc-if value="{{ md.hasDrafts }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:34px; border-top:1px solid #e4e2db; padding-top:22px;">
+                <div style="font-size:13px; font-weight:600; color:#8a877f; margin-bottom:16px;">Drafts — what this used to sound like</div>
+                <sc-for list="{{ md.versions }}" as="v" hint-placeholder-count="1">
+                  <div onClick="{{ v.onUse }}" style="{{ v.style }}">
+                    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px;">
+                      <span style="font-size:12px; font-weight:600; color:#1a1a18;">{{ v.n }}{{ v.currentTag }}</span>
+                      <span style="font-size:11px; font-weight:500; color:#adaa9f;">{{ v.when }}</span>
+                    </div>
+                    <div style="font-size:14px; line-height:1.5; color:#55534d; white-space:pre-wrap;">{{ v.text }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <div style="margin-top:28px; padding-top:15px; border-top:1px solid #ecebe4; font-size:12px; font-weight:500; color:#adaa9f;">last changed {{ md.updatedWhen }}</div>
+          </div>
+
+          <aside style="width:260px; flex:none; position:sticky; top:0; background:#efeee9; border-radius:3px; padding:20px 22px;">
+            <div style="font-size:13px; font-weight:600; color:#8a877f; margin-bottom:14px;">Craft rules</div>
+            <sc-for list="{{ md.craftRules }}" as="cr" hint-placeholder-count="8">
+              <div style="font-size:13px; line-height:1.5; color:#55534d; margin-bottom:11px; padding-left:12px; border-left:2px solid #d8d5cc;">{{ cr.text }}</div>
+            </sc-for>
+          </aside>
+        </div>
+      </div>
+    </sc-if>
   </main>
 
   <!-- FOCUS -->
@@ -449,10 +518,38 @@ class Component extends DCLogic {
       { id: 'causal', name: 'Causal', kind: 'map' },
       { id: 'plot', name: 'Plot', kind: 'work' },
       { id: 'scenes', name: 'Scenes', kind: 'work' },
+      { id: 'monologue', name: 'Monologue', kind: 'monologue' },
       { id: 'memory', name: 'Memory', kind: 'memory' },
     ];
     // Linear path through the essentials for a first pass — same fields as the map, one at a time.
     this.GUIDED_ORDER = ['premise', 'bestCharacter', 'char.desire', 'conflict', 'char.opponent', 'basicAction', 'characterChange', 'moralChoice'];
+
+    // Monologue Studio (chapter 1): a small, assistive frame — not a generator.
+    // The bet: the character work the app already captures is exactly the raw material a monologue needs.
+    this.MONOLOGUE_MODES = [
+      { id: 'deliberation', name: 'Deliberation', desc: 'A mind arguing with itself.', shape: 'Thesis → counter → unresolved dread.' },
+      { id: 'rant', name: 'Escalating Rant', desc: 'A grievance building to a demand.', shape: 'Name the wound → widen it → the call to act.' },
+      { id: 'confession', name: 'Confession', desc: 'A quiet admission that turns.', shape: 'Small truth → bigger truth → the line they can’t take back.' },
+      { id: 'plea', name: 'Plea', desc: 'Speaking straight at someone, needing something from them.', shape: 'The ask → what’s under it → what happens if they say no.' },
+    ];
+    // PIVOT: the scaffold, not a fill-in-the-blanks template.
+    this.PIVOT_FIELDS = [
+      ['pressure', 'Pressure', 'The moment or relationship squeezing them right now.'],
+      ['iWant', 'I want', 'The raw desire, in their own words — not the polite version.'],
+      ['verboten', 'Verboten', 'The forbidden truth they’d normally never say out loud.'],
+      ['turn', 'One turn', 'The pivot — a realization, a decision, a reversal, mid-speech.'],
+      ['hardLine', 'The hard line', 'A short, concrete, unsoftened final beat. No fade-out.'],
+    ];
+    this.craftRules = [
+      'Short sentences. Then one long one when it earns it.',
+      'Concrete nouns and active verbs — cut adjectives and adverbs.',
+      'One image, reused — not five metaphors.',
+      'Contradiction on the page (wants X, says Y) creates subtext.',
+      'Escalate: each beat costs more than the last.',
+      'Speak at someone, even if they’re not there — direct address beats abstraction.',
+      'Present tense, first person, no stage directions.',
+      'Read it aloud. If you can’t breathe it, cut it.',
+    ];
     // Gravity: each lens reads as vertical dependency columns, composed by relationship, not radial.
     this.LAYOUT = {
       story: { premise:{x:88,y:88}, designingPrinciple:{x:88,y:300}, conflict:{x:88,y:500}, moralChoice:{x:104,y:706}, bestCharacter:{x:568,y:88}, 'char.desire':{x:588,y:300}, 'char.opponent':{x:588,y:456}, basicAction:{x:568,y:600}, characterChange:{x:568,y:772} },
@@ -586,15 +683,25 @@ class Component extends DCLogic {
       ['conflict','requires','basicAction'],
     ].map(([from, verb, to]) => ({ id: this.rid(), from, verb, to }));
 
+    f['@monologue'] = this.mk('', 'OPEN');
     return { id: this.rid(), title: 'Escape the Inheritance', createdAt: Date.now(), archived: false, fields: f, onboarded: true,
       layouts: this.cloneLayouts(), relations, plot: [], scenes: [], symbols: [],
-      notes: [{ id: this.rid(), title: 'Premise Chapter', text: 'Complete — enough to move into the next Truby stage. Story DNA; let later work challenge it.', createdAt: Date.now() }] };
+      notes: [{ id: this.rid(), title: 'Premise Chapter', text: 'Complete — enough to move into the next Truby stage. Story DNA; let later work challenge it.', createdAt: Date.now() }],
+      monologue: { mode: 'confession', pivot: {
+        pressure: 'Sitting across from his father the night before the induction ceremony he never asked for.',
+        iWant: 'For someone to say he\'s allowed to want a different life.',
+        verboten: 'That his brother\'s death didn\'t just break his heart — it also, secretly, set something in him free.',
+        turn: 'He realizes the guilt he\'s been calling love was actually fear of becoming visible.',
+        hardLine: 'He says it out loud, to no one, for the first time: "I\'m not going to disappear the way you did."',
+      } } };
   }
   cloneLayouts() { return JSON.parse(JSON.stringify(this.LAYOUT)); }
+  freshMonologue() { return { mode: 'deliberation', pivot: { pressure: '', iWant: '', verboten: '', turn: '', hardLine: '' } }; }
   seedBlank(title) {
     const f = {};
     this.metaP.concat(this.metaC).forEach(([k]) => { f[k] = this.mk('', 'OPEN'); });
-    return { id: this.rid(), title: title || 'Untitled Work', createdAt: Date.now(), archived: false, fields: f, onboarded: false, layouts: this.cloneLayouts(), relations: [], plot: [], scenes: [], symbols: [], notes: [] };
+    f['@monologue'] = this.mk('', 'OPEN');
+    return { id: this.rid(), title: title || 'Untitled Work', createdAt: Date.now(), archived: false, fields: f, onboarded: false, layouts: this.cloneLayouts(), relations: [], plot: [], scenes: [], symbols: [], notes: [], monologue: this.freshMonologue() };
   }
 
   // A finished, read-only worked example — for "compare mine to a master."
@@ -623,6 +730,8 @@ class Component extends DCLogic {
       'char.selfRevelation': 'He realizes that keeping Nemo safe was never the same thing as keeping him close.',
       'char.newEquilibrium': 'He lets Nemo swim to school on his own — still afraid, but no longer ruled by it.',
     };
+    const monoDraft = 'Coral used to say I worried enough for both of us. I thought that was a joke.\n\nI count the reef every morning. I know exactly how far he can swim before the current gets him. I have never once told him that number, because the number is the only thing standing between me and losing the last piece of her I have left.\n\nHe thinks I don\'t trust him. That isn\'t it. I don\'t trust the ocean — I have proof, I have a reason, I watched it happen — and I have been so busy keeping him small enough to protect that I never once asked what it costs him to stay that small.\n\nI kept one fish safe by teaching him to be afraid of everything I already was. That\'s not protection. That\'s just fear, with better manners.\n\nSo here is the truth I have never said out loud: some part of me needs him close because I don\'t know who I am when I\'m not holding on to something. That\'s mine to carry. It was never supposed to be his.\n\nI\'m letting go of the net. Not because I stopped being afraid — I will never stop being afraid — but because he has to find out what he can survive, and I don\'t get to be the one who decides that anymore.';
+    f['@monologue'] = this.mk(monoDraft, 'LOCKED');
     Object.keys(R).forEach(k => { f[k] = this.mk(R[k], 'LOCKED'); });
     const relations = [
       ['premise', 'expresses', 'designingPrinciple'],
@@ -633,7 +742,14 @@ class Component extends DCLogic {
     ].map(([from, verb, to]) => ({ id: this.rid(), from, verb, to }));
     return { id: 'ref-finding-a-way-home', title: 'A Way Home (worked example)', createdAt: Date.now(), archived: false, fields: f, onboarded: true, reference: true,
       layouts: this.cloneLayouts(), relations, plot: [], scenes: [], symbols: [],
-      notes: [{ id: this.rid(), title: 'Reference', text: 'A finished worked example, structured the way Finding Nemo is — read-only, so it never mixes with your drafts. Open it side by side with your own map.', createdAt: Date.now() }] };
+      notes: [{ id: this.rid(), title: 'Reference', text: 'A finished worked example, structured the way Finding Nemo is — read-only, so it never mixes with your drafts. Open it side by side with your own map.', createdAt: Date.now() }],
+      monologue: { mode: 'confession', pivot: {
+        pressure: 'Alone, after the reef fills back in around the space where Nemo used to be, the night before he has to decide whether to go looking.',
+        iWant: 'To have him back exactly as he was, safe, close, unchanged.',
+        verboten: 'That keeping him safe was always partly about keeping himself from feeling like he lost everything twice.',
+        turn: 'He realizes the net he\'s been keeping Nemo in was built from his own fear, not from love.',
+        hardLine: '"I\'m letting go of the net. Not because I stopped being afraid — but because he has to find out what he can survive."',
+      } } };
   }
 
   freshUI() { return { lens: 'story', focusKey: null, panX: 72, panY: 28, scale: 0.76, showExport: false, exportFmt: 'md', showStories: false, noteType: 'note', noteDraft: '', newTitle: '', newText: '', copied: false, relVerb: 'causes', relTarget: '', onboardOpen: false, onboardStep: 0, toast: null, guidedIndex: 0 }; }
@@ -643,6 +759,8 @@ class Component extends DCLogic {
     if (saved && saved.stories && saved.stories.length) {
       const stories = saved.stories;
       if (!stories.some(x => x.reference)) stories.push(this.seedReference());
+      // Migrate stories saved before Monologue Studio existed.
+      stories.forEach(st => { if (!st.fields['@monologue']) st.fields['@monologue'] = this.mk('', 'OPEN'); if (!st.monologue) st.monologue = this.freshMonologue(); });
       return { stories, currentId: saved.currentId || saved.stories[0].id, ui: this.freshUI() };
     }
     const s = this.seedStory();
@@ -730,6 +848,10 @@ class Component extends DCLogic {
 
   markRipples(key) { const s = this.cur(); s.relations.forEach(r => { if (r.from === key && this.causalVerbs.indexOf(r.verb) >= 0 && s.fields[r.to]) s.fields[r.to].review = { by: this.labels[key] || key, at: Date.now() }; }); }
   isRefLocked() { return !!this.cur().reference; }
+
+  // ---- Monologue Studio ----
+  setMonologueMode(mode) { if (this.isRefLocked()) return; this.cur().monologue.mode = mode; this.commit(); }
+  setPivot(key, e) { if (this.isRefLocked()) return; this.cur().monologue.pivot[key] = e.target.value; this.commit(); }
   setFieldText(key, text) {
     if (this.isRefLocked()) return;
     const f = this.cur().fields[key];
@@ -837,7 +959,7 @@ class Component extends DCLogic {
 
   renderVals() {
     const R = React, u = this.state.ui, s = this.cur(), lens = this.curLens();
-    const lensId = lens.id, isMap = lens.kind === 'map', isWork = lens.kind === 'work', isMemory = lens.kind === 'memory', isGuided = lens.kind === 'guided';
+    const lensId = lens.id, isMap = lens.kind === 'map', isWork = lens.kind === 'work', isMemory = lens.kind === 'memory', isGuided = lens.kind === 'guided', isMonologue = lens.kind === 'monologue';
 
     const lenses = this.LENSES.map(l => ({ name: l.name, onClick: () => this.setLens(l.id),
       style: { background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0 5px', fontSize: '14px', fontWeight: u.lens === l.id ? 600 : 400, letterSpacing: '-0.005em', color: u.lens === l.id ? '#1a1a18' : '#8a877f', borderBottom: u.lens === l.id ? '1px solid #1a1a18' : '1px solid transparent', marginBottom: '-1px' } }));
@@ -924,6 +1046,30 @@ class Component extends DCLogic {
       gd.next = () => { if (done) { this.setLens('story'); } else { this.guidedNext(); } };
       gd.skipLabel = done ? '' : 'I don\'t know — skip';
       gd.showSkip = !done;
+    }
+
+    // MONOLOGUE
+    let md = {};
+    if (isMonologue) {
+      const mono = s.monologue || this.freshMonologue(), mf = s.fields['@monologue'];
+      const curMode = this.MONOLOGUE_MODES.find(m => m.id === mono.mode) || this.MONOLOGUE_MODES[0];
+      md.readOnly = !!s.reference;
+      md.characterLine = this.ftext(s.fields.bestCharacter) || 'Fill in Best Character on the map first — the monologue draws its voice from there.';
+      md.modes = this.MONOLOGUE_MODES.map(m => ({ id: m.id, name: m.name, desc: m.desc, shape: m.shape, active: m.id === mono.mode,
+        onClick: () => this.setMonologueMode(m.id),
+        style: { textAlign: 'left', cursor: 'pointer', padding: '13px 15px', borderRadius: '2px', border: '1px solid ' + (m.id === mono.mode ? '#a8762f' : '#e4e2db'), background: m.id === mono.mode ? '#f6ecd8' : '#faf9f6' } }));
+      md.curModeDesc = curMode.desc; md.curModeShape = curMode.shape;
+      md.pivot = this.PIVOT_FIELDS.map(([key, label, hint]) => ({ key, label, hint, value: mono.pivot[key] || '', onInput: (e) => this.setPivot(key, e) }));
+      const st = this.stateOf(mf);
+      const linkBtn3 = (active) => ({ background: 'none', border: 'none', padding: '2px 0', cursor: 'pointer', fontSize: '13px', fontWeight: active ? 600 : 400, color: active ? '#1a1a18' : '#8a877f', borderBottom: active ? '2px solid #1a1a18' : '2px solid transparent' });
+      md.text = this.ftext(mf); md.onText = (e) => this.setFieldText('@monologue', e.target.value);
+      md.stateOptions = [['OPEN', 'Question'], ['WORKING', 'Hypothesis'], ['LOCKED', 'Decision']].map(([status, label]) => ({ label, onClick: () => this.setStatus('@monologue', status), style: linkBtn3(mf.status === status) }));
+      md.commitVersion = () => this.commitVersion('@monologue');
+      md.hasDrafts = mf.versions.length > 1;
+      md.versions = mf.versions.map((v, i) => ({ n: 'V' + (i + 1), currentTag: i === mf.current ? ' · current' : '', when: this.fmt(v.createdAt), text: v.text, onUse: () => this.useVersion('@monologue', i),
+        style: { padding: '12px 14px', marginBottom: '7px', cursor: 'pointer', borderRadius: '2px', background: i === mf.current ? '#f1ede3' : '#efeee9', border: '1px solid ' + (i === mf.current ? '#c9bfa4' : '#e4e2db') } }));
+      md.craftRules = this.craftRules.map(t => ({ text: t }));
+      md.updatedWhen = this.fmt(mf.updatedAt);
     }
 
     // FOCUS
@@ -1018,7 +1164,7 @@ class Component extends DCLogic {
 
     return {
       storyTitle: s.title, storyIndex: 'Work ' + String(idxNum).padStart(2, '0'),
-      lenses, isMap, isWork, isMemory, isGuided, gd, isRefStory: !!s.reference,
+      lenses, isMap, isWork, isMemory, isGuided, gd, isMonologue, md, isRefStory: !!s.reference,
       mapObjects, mapLinesEl, canvasStyle,
       onCanvasDown: (e) => this.onCanvasDown(e), onWheel: (e) => this.onWheel(e),
       zoomIn: () => this.zoomIn(), zoomOut: () => this.zoomOut(), resetView: () => this.resetView(), scaleLabel: Math.round(u.scale * 100) + '%',

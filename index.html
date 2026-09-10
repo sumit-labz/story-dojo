@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
 <style>
   :root {
     --bg:#F4F4F1; --surface:#faf9f6; --panel:#f0efe9; --inset:#efeee9; --inset-accent:#f0ece2;
@@ -47,15 +48,24 @@
   @keyframes sd-zoom { from { transform: scale(0.985) translateY(8px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
   @keyframes sd-dim { from { opacity: 0; } to { opacity: 1; } }
   @keyframes sd-slide { from { transform: translateX(-16px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  iconify-icon { vertical-align: -0.15em; flex: none; }
+  .sd-textbox { position: relative; }
+  .sd-mic-inline { position: absolute; right: 10px; bottom: 10px; width: 34px; height: 34px; border-radius: 999px; border: 1px solid var(--border-note); background: var(--surface); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px -3px var(--shadow); }
+  .sd-mic-inline:hover { border-color: var(--accent); color: var(--accent); }
   @media print {
+    html, body { background: #fff !important; height: auto !important; }
     header { display: none !important; }
-    .sd-app { position: static !important; height: auto !important; overflow: visible !important; display: block !important; background: #fff !important; }
-    main { position: static !important; height: auto !important; overflow: visible !important; }
+    .sd-app { position: static !important; height: auto !important; min-height: 0 !important; overflow: visible !important; display: block !important; background: #fff !important; }
+    .sd-app > *:not(main) { display: none !important; }
+    main { position: static !important; height: auto !important; overflow: visible !important; background: #fff !important; }
+    main > *:not(.sd-print-view) { display: none !important; }
     .sd-print-view { position: static !important; inset: auto !important; height: auto !important; overflow: visible !important; background: #fff !important; }
     .sd-print-view > div { max-width: none !important; padding: 12px !important; margin: 0 !important; }
     .sd-print-view, .sd-print-view * { color: #16140f !important; background: transparent !important; box-shadow: none !important; text-shadow: none !important; }
     .sd-print-view [style*="columns"] { column-count: 2 !important; }
-    .sd-card { break-inside: avoid; page-break-inside: avoid; border: 1px solid #ccc !important; background: #fff !important; }
+    /* Cut-line effect: a dashed border and a scissor mark at each card so a printed page can be cut apart. */
+    .sd-card { break-inside: avoid; page-break-inside: avoid; position: relative; border: 1.5px dashed #999 !important; background: #fff !important; margin: 10px !important; padding: 16px 17px 17px !important; }
+    .sd-card::before { content: "✂"; position: absolute; top: -11px; left: 10px; background: #fff; padding: 0 5px; font-size: 13px; color: #666; line-height: 1; }
   }
 </style>
 </helmet>
@@ -70,7 +80,7 @@
     <div style="width:1px; height:20px; background:var(--border); flex:none;"></div>
     <nav style="display:flex; align-items:center; gap:22px; flex:1; min-width:0; overflow:hidden;">
       <sc-for list="{{ lenses }}" as="l" hint-placeholder-count="7">
-        <button onClick="{{ l.onClick }}" style="{{ l.style }}" style-hover="color:var(--ink);">{{ l.name }}</button>
+        <button onClick="{{ l.onClick }}" style="{{ l.style }}" style-hover="color:var(--ink);"><iconify-icon icon="{{ l.icon }}"></iconify-icon> {{ l.name }}</button>
       </sc-for>
       <sc-if value="{{ isView }}" hint-placeholder-val="{{ false }}">
         <span style="font-size:14px; font-weight:600; color:var(--ink); display:flex; align-items:center; gap:9px;">Reading view <span style="font-size:12px; font-weight:500; color:var(--faint);">· flashcards</span></span>
@@ -96,6 +106,7 @@
           <sc-for list="{{ mapObjects }}" as="o" hint-placeholder-count="8">
             <div onMouseDown="{{ o.onDown }}" title="{{ o.titleAttr }}" style="{{ o.wrap }}" style-hover="opacity:0.72;">
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px;">
+                <iconify-icon icon="{{ o.icon }}" style="font-size:14px; color:var(--faint-2);"></iconify-icon>
                 <span style="font-size:13px; font-weight:500; color:var(--muted); white-space:nowrap;">{{ o.name }}</span>
                 <span style="{{ o.markStyle }}">{{ o.mark }}</span>
                 <sc-if value="{{ o.hasTag }}" hint-placeholder-val="{{ false }}">
@@ -148,6 +159,7 @@
               <input value="{{ newTitle }}" onInput="{{ setNewTitle }}" placeholder="{{ workTitlePh }}" style="background:none; border:none; color:var(--ink); font-size:19px; font-weight:500; padding:2px 0; outline:none;" />
               <textarea value="{{ newText }}" onInput="{{ setNewText }}" placeholder="A provisional beat — leave it half-formed." style="background:none; border:none; color:var(--text); font-size:15px; line-height:1.55; padding:0; outline:none; resize:none; min-height:42px;"></textarea>
             </div>
+            <button onClick="{{ onDictateNewText }}" style="align-self:center; background:none; border:1px solid var(--border-note); color:var(--text); font-size:13px; font-weight:500; padding:9px 12px; border-radius:2px; cursor:pointer;" style-hover="border-color:var(--ink); color:var(--ink);">🎤</button>
             <button onClick="{{ addToList }}" style="align-self:center; background:var(--ink); border:none; color:var(--bg); font-size:14px; font-weight:500; padding:9px 20px; border-radius:2px; cursor:pointer;" style-hover="background:var(--ink-hover);">Place</button>
           </div>
 
@@ -178,7 +190,7 @@
           <sc-for list="{{ memoryRows }}" as="m" hint-placeholder-count="6">
             <div onClick="{{ m.onOpen }}" style="border-top:1px solid var(--border); padding:26px 0; cursor:pointer; display:grid; grid-template-columns:180px 1fr; gap:28px;" style-hover="opacity:0.66;">
               <div>
-                <div style="font-size:14px; font-weight:600; color:var(--ink);">{{ m.name }}</div>
+                <div style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:var(--ink);"><iconify-icon icon="{{ m.icon }}" style="color:var(--accent); font-size:15px;"></iconify-icon> {{ m.name }}</div>
                 <div style="font-size:12px; font-weight:500; color:var(--faint); margin-top:7px;">{{ m.meta }}</div>
               </div>
               <div>
@@ -211,21 +223,35 @@
           </sc-if>
 
           <sc-if value="{{ gd.showQuestion }}" hint-placeholder-val="{{ true }}">
-            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:16px;">
-              <h1 style="font-size:26px; font-weight:600; letter-spacing:-0.015em; color:var(--ink); margin:0 0 6px; line-height:1.25;">{{ gd.label }}</h1>
-              <sc-if value="{{ gd.canDictate }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ gd.onDictate }}" style="background:none; border:1px solid var(--border-note); color:var(--text); font-size:12px; font-weight:600; padding:6px 12px; border-radius:2px; cursor:pointer; flex:none;" style-hover="border-color:var(--ink); color:var(--ink);">🎤 Dictate</button>
-              </sc-if>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+              <iconify-icon icon="{{ gd.icon }}" style="font-size:22px; color:var(--accent);"></iconify-icon>
+              <h1 style="font-size:26px; font-weight:600; letter-spacing:-0.015em; color:var(--ink); margin:0; line-height:1.25;">{{ gd.label }}</h1>
             </div>
             <p style="font-size:15px; line-height:1.5; color:var(--muted); margin:0 0 20px;">{{ gd.def }}</p>
             <sc-for list="{{ gd.examples }}" as="ex" hint-placeholder-count="2">
               <div style="font-size:13px; line-height:1.5; color:var(--faint-2); margin-bottom:6px; padding-left:14px; border-left:2px solid var(--border-note);">{{ ex.text }}</div>
             </sc-for>
-            <textarea value="{{ gd.text }}" onInput="{{ gd.onText }}" placeholder="Write it as it stands. Leave it unresolved if it is unresolved." style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:2px; color:var(--ink); font-size:19px; line-height:1.45; padding:16px 18px; outline:none; resize:vertical; min-height:88px; margin-top:18px;"></textarea>
-            <div style="display:flex; align-items:center; gap:18px; margin-top:16px;">
-              <sc-for list="{{ gd.stateOptions }}" as="so" hint-placeholder-count="3">
-                <button onClick="{{ so.onClick }}" style="{{ so.style }}">{{ so.label }}</button>
-              </sc-for>
+            <sc-if value="{{ gd.hasFormula }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; gap:10px; align-items:flex-start; background:var(--accent-bg); border-radius:2px; padding:11px 14px; margin-top:14px;">
+                <iconify-icon icon="ph:chat-teardrop-text" style="font-size:14px; color:var(--accent-deep); margin-top:2px;"></iconify-icon>
+                <span style="font-size:13px; line-height:1.5; color:var(--accent-deep);">{{ gd.formula }}</span>
+              </div>
+            </sc-if>
+            <div class="sd-textbox" style="margin-top:18px;">
+              <textarea value="{{ gd.text }}" onInput="{{ gd.onText }}" placeholder="Write it as it stands. Leave it unresolved if it is unresolved." style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:2px; color:var(--ink); font-size:19px; line-height:1.45; padding:16px 52px 16px 18px; outline:none; resize:vertical; min-height:88px;"></textarea>
+              <sc-if value="{{ gd.canDictate }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ gd.onDictate }}" class="sd-mic-inline" title="Dictate">
+                  <iconify-icon icon="ph:microphone-fill" style="font-size:16px;"></iconify-icon>
+                </button>
+              </sc-if>
+            </div>
+            <div style="margin-top:20px;">
+              <div style="font-size:12px; color:var(--faint); margin-bottom:9px;">How settled is this? Change it anytime.</div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <sc-for list="{{ gd.stateOptions }}" as="so" hint-placeholder-count="3">
+                  <button onClick="{{ so.onClick }}" style="{{ so.style }}"><iconify-icon icon="{{ so.icon }}"></iconify-icon> {{ so.label }}</button>
+                </sc-for>
+              </div>
             </div>
           </sc-if>
 
@@ -274,17 +300,19 @@
               </sc-for>
             </div>
 
-            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:12px;">
-              <div style="font-size:13px; font-weight:600; color:var(--muted);">The draft</div>
+            <div style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:12px;">The draft</div>
+            <div class="sd-textbox">
+              <textarea value="{{ md.text }}" onInput="{{ md.onText }}" readOnly="{{ md.readOnly }}" placeholder="Present tense. First person. No stage directions. Read it aloud as you go." style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:2px; color:var(--ink); font-size:18px; line-height:1.6; padding:20px 52px 20px 22px; outline:none; resize:vertical; min-height:220px;"></textarea>
               <sc-if value="{{ md.canDictate }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ md.onDictate }}" style="background:none; border:1px solid var(--border-note); color:var(--text); font-size:12px; font-weight:600; padding:6px 12px; border-radius:2px; cursor:pointer; flex:none;" style-hover="border-color:var(--ink); color:var(--ink);">🎤 Dictate this monologue</button>
+                <button onClick="{{ md.onDictate }}" class="sd-mic-inline" title="Dictate this monologue">
+                  <iconify-icon icon="ph:microphone-fill" style="font-size:16px;"></iconify-icon>
+                </button>
               </sc-if>
             </div>
-            <textarea value="{{ md.text }}" onInput="{{ md.onText }}" readOnly="{{ md.readOnly }}" placeholder="Present tense. First person. No stage directions. Read it aloud as you go." style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:2px; color:var(--ink); font-size:18px; line-height:1.6; padding:20px 22px; outline:none; resize:vertical; min-height:220px;"></textarea>
 
             <div style="display:flex; align-items:center; gap:20px; margin-top:18px; flex-wrap:wrap;">
               <sc-for list="{{ md.stateOptions }}" as="so" hint-placeholder-count="3">
-                <button onClick="{{ so.onClick }}" style="{{ so.style }}">{{ so.label }}</button>
+                <button onClick="{{ so.onClick }}" style="{{ so.style }}"><iconify-icon icon="{{ so.icon }}"></iconify-icon> {{ so.label }}</button>
               </sc-for>
               <span style="flex:1;"></span>
               <button onClick="{{ md.commitVersion }}" style="background:none; border:none; color:var(--muted); font-size:13px; font-weight:500; cursor:pointer;" style-hover="color:var(--ink);">＋ Keep as draft</button>
@@ -312,6 +340,9 @@
 
               <div style="display:flex; gap:12px; align-items:flex-end; margin-bottom:26px;">
                 <textarea value="{{ md.fragmentDraft }}" onInput="{{ md.setFragmentDraft }}" readOnly="{{ md.readOnly }}" placeholder="A fragment — a line, an image, a contradiction…" style="flex:1; background:var(--inset); border:none; border-radius:2px; color:var(--ink); font-size:15px; line-height:1.5; padding:11px 14px; outline:none; resize:none; min-height:44px;"></textarea>
+                <sc-if value="{{ md.canDictateFragment }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ md.onDictateFragment }}" style="background:none; border:1px solid var(--border-note); color:var(--text); font-size:13px; font-weight:500; padding:11px 12px; border-radius:2px; cursor:pointer; flex:none;" style-hover="border-color:var(--ink); color:var(--ink);">🎤</button>
+                </sc-if>
                 <button onClick="{{ md.addFragment }}" style="background:var(--ink); border:none; color:var(--bg); font-size:13px; font-weight:500; padding:11px 18px; border-radius:2px; cursor:pointer; flex:none;" style-hover="background:var(--ink-hover);">Pin</button>
               </div>
 
@@ -357,7 +388,8 @@
             <div style="columns:320px 3; column-gap:20px; margin:0 0 46px;">
               <sc-for list="{{ sec.cards }}" as="c" hint-placeholder-count="6">
                 <div class="sd-card" onClick="{{ c.onOpen }}" style="{{ c.style }}">
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:9px;">
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:9px;">
+                    <iconify-icon icon="{{ c.icon }}" style="font-size:15px; color:var(--accent);"></iconify-icon>
                     <span style="font-size:14px; font-weight:600; color:var(--ink); flex:1; min-width:0;">{{ c.label }}</span>
                     <span style="{{ c.chipStyle }}">{{ c.stateLabel }}</span>
                   </div>
@@ -385,16 +417,12 @@
         <div style="{{ f.sheetStyle }}">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:22px;">
             <div style="display:flex; align-items:center; gap:10px;">
+              <iconify-icon icon="{{ f.icon }}" style="font-size:17px; color:var(--accent);"></iconify-icon>
               <span style="font-size:14px; font-weight:600; color:var(--ink);">{{ f.name }}</span>
               <span style="{{ f.markStyle }}">{{ f.mark }}</span>
               <span style="font-size:13px; font-weight:500; color:var(--faint);">{{ f.stateLabel }}</span>
             </div>
-            <div style="display:flex; align-items:center; gap:14px;">
-              <sc-if value="{{ f.canDictate }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ f.onDictate }}" style="background:none; border:1px solid var(--border-note); color:var(--text); font-size:12px; font-weight:600; padding:6px 12px; border-radius:2px; cursor:pointer;" style-hover="border-color:var(--ink); color:var(--ink);">🎤 Dictate</button>
-              </sc-if>
-              <button onClick="{{ closeFocus }}" style="background:none; border:none; cursor:pointer; font-size:13px; font-weight:500; color:var(--muted);" style-hover="color:var(--ink);">Close</button>
-            </div>
+            <button onClick="{{ closeFocus }}" style="background:none; border:none; cursor:pointer; font-size:13px; font-weight:500; color:var(--muted);" style-hover="color:var(--ink);">Close</button>
           </div>
 
           <sc-if value="{{ f.hasConceptDef }}" hint-placeholder-val="{{ false }}">
@@ -403,6 +431,12 @@
               <sc-for list="{{ f.examples }}" as="ex" hint-placeholder-count="2">
                 <div style="font-size:13px; line-height:1.5; color:var(--muted); margin-top:8px; padding-left:14px; border-left:2px solid var(--border-note);">{{ ex.text }}</div>
               </sc-for>
+              <sc-if value="{{ f.hasFormula }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; gap:9px; align-items:flex-start; margin-top:10px;">
+                  <span style="font-size:13px; flex:none;">🗣</span>
+                  <span style="font-size:13px; line-height:1.5; color:var(--accent-deep);">{{ f.formula }}</span>
+                </div>
+              </sc-if>
             </div>
           </sc-if>
 
@@ -413,16 +447,26 @@
             </div>
           </sc-if>
 
-          <textarea value="{{ f.text }}" onInput="{{ f.onText }}" readOnly="{{ f.readOnly }}" placeholder="Write it as it stands. Leave it unresolved if it is unresolved." style="{{ f.editStyle }}"></textarea>
+          <div class="sd-textbox">
+            <textarea value="{{ f.text }}" onInput="{{ f.onText }}" readOnly="{{ f.readOnly }}" placeholder="Write it as it stands. Leave it unresolved if it is unresolved." style="{{ f.editStyle }}"></textarea>
+            <sc-if value="{{ f.canDictate }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ f.onDictate }}" class="sd-mic-inline" title="Dictate">
+                <iconify-icon icon="ph:microphone-fill" style="font-size:16px;"></iconify-icon>
+              </button>
+            </sc-if>
+          </div>
 
-          <div style="display:flex; align-items:center; gap:20px; margin-top:24px; flex-wrap:wrap;">
-            <sc-for list="{{ f.stateOptions }}" as="so" hint-placeholder-count="3">
-              <button onClick="{{ so.onClick }}" style="{{ so.style }}">{{ so.label }}</button>
-            </sc-for>
-            <span style="width:1px; height:16px; background:var(--border);"></span>
-            <button onClick="{{ f.toggleDiscovery }}" style="{{ f.discoveryStyle }}">✦ Discovery</button>
-            <span style="flex:1;"></span>
-            <button onClick="{{ f.commitVersion }}" style="background:none; border:none; color:var(--muted); font-size:13px; font-weight:500; cursor:pointer;" style-hover="color:var(--ink);">＋ Keep as draft</button>
+          <div style="margin-top:20px;">
+            <div style="font-size:11px; color:var(--faint); margin-bottom:9px;">How settled is this? Change it anytime.</div>
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+              <sc-for list="{{ f.stateOptions }}" as="so" hint-placeholder-count="3">
+                <button onClick="{{ so.onClick }}" style="{{ so.style }}"><iconify-icon icon="{{ so.icon }}"></iconify-icon> {{ so.label }}</button>
+              </sc-for>
+              <span style="width:1px; height:16px; background:var(--border);"></span>
+              <button onClick="{{ f.toggleDiscovery }}" style="{{ f.discoveryStyle }}"><iconify-icon icon="ph:sparkle-fill"></iconify-icon> Discovery</button>
+              <span style="flex:1;"></span>
+              <button onClick="{{ f.commitVersion }}" style="background:none; border:none; color:var(--muted); font-size:13px; font-weight:500; cursor:pointer;" style-hover="color:var(--ink);"><iconify-icon icon="ph:plus"></iconify-icon> Keep as draft</button>
+            </div>
           </div>
 
           <div style="margin-top:38px; border-top:1px solid var(--border); padding-top:22px;">
@@ -482,6 +526,7 @@
             </div>
             <div style="display:flex; gap:14px; align-items:flex-end;">
               <textarea value="{{ f.noteDraft }}" onInput="{{ f.setNoteDraft }}" placeholder="A note, a question, or an external suggestion…" style="flex:1; background:none; border:none; border-bottom:1px solid var(--border); color:var(--ink); font-size:15px; line-height:1.5; padding:7px 0; outline:none; resize:none; min-height:30px;"></textarea>
+              <button onClick="{{ f.onDictateNote }}" style="background:none; border:1px solid var(--border-note); color:var(--text); font-size:13px; font-weight:500; padding:8px 12px; border-radius:2px; cursor:pointer; flex:none;" style-hover="border-color:var(--ink); color:var(--ink);">🎤</button>
               <button onClick="{{ f.addNote }}" style="background:none; border:1px solid var(--border-note); color:var(--text); font-size:13px; font-weight:500; padding:8px 15px; border-radius:2px; cursor:pointer; flex:none;" style-hover="border-color:var(--ink); color:var(--ink);">Pin</button>
             </div>
           </div>
@@ -501,7 +546,7 @@
     <div style="position:absolute; inset:0; z-index:23; display:flex; align-items:center; justify-content:center; padding:40px; pointer-events:none;">
       <div onClick="{{ stop }}" style="pointer-events:auto; width:640px; max-width:92vw; max-height:86vh; overflow-y:auto; background:var(--surface); border:1px solid var(--border); border-radius:4px; box-shadow:0 34px 90px -40px var(--shadow); padding:34px 38px; animation:sd-zoom .2s cubic-bezier(.2,.8,.2,1);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <span style="font-size:15px; font-weight:600; color:var(--ink);">{{ viewCard.label }}</span>
+          <span style="display:flex; align-items:center; gap:9px; font-size:15px; font-weight:600; color:var(--ink);"><iconify-icon icon="{{ viewCard.icon }}" style="color:var(--accent); font-size:17px;"></iconify-icon> {{ viewCard.label }}</span>
           <span style="{{ viewCard.chipStyle }}">{{ viewCard.stateLabel }}</span>
         </div>
         <div style="height:1px; background:var(--border); margin:10px 0 22px;"></div>
@@ -533,12 +578,16 @@
 
         <sc-if value="{{ ob.step0 }}" hint-placeholder-val="{{ true }}">
           <textarea value="{{ ob.premiseText }}" onInput="{{ ob.onPremise }}" placeholder="A person who ___." style="width:100%; background:var(--inset); border:none; border-radius:2px; color:var(--ink); font-size:19px; font-weight:500; line-height:1.4; padding:16px 18px; outline:none; resize:none; min-height:76px;"></textarea>
+          <button onClick="{{ ob.onDictatePremise }}" style="margin-top:10px; background:none; border:1px solid var(--border-note); color:var(--text); font-size:12px; font-weight:600; padding:6px 12px; border-radius:2px; cursor:pointer;" style-hover="border-color:var(--ink); color:var(--ink);">🎤 Dictate</button>
         </sc-if>
 
         <sc-if value="{{ ob.step1 }}" hint-placeholder-val="{{ false }}">
           <sc-for list="{{ ob.questions }}" as="q" hint-placeholder-count="3">
             <div style="margin-bottom:20px;">
-              <div style="font-size:14px; font-weight:600; color:var(--ink); margin-bottom:4px;">{{ q.label }}</div>
+              <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:4px;">
+                <div style="font-size:14px; font-weight:600; color:var(--ink);">{{ q.label }}</div>
+                <button onClick="{{ q.onDictate }}" style="background:none; border:1px solid var(--border-note); color:var(--text); font-size:11px; font-weight:600; padding:4px 10px; border-radius:2px; cursor:pointer; flex:none;" style-hover="border-color:var(--ink); color:var(--ink);">🎤 Dictate</button>
+              </div>
               <div style="font-size:13px; color:var(--muted); margin-bottom:8px;">{{ q.hint }}</div>
               <textarea value="{{ q.text }}" onInput="{{ q.onInput }}" placeholder="{{ q.placeholder }}" style="width:100%; background:var(--inset); border:none; border-radius:2px; color:var(--ink); font-size:15px; line-height:1.5; padding:11px 14px; outline:none; resize:none; min-height:52px;"></textarea>
             </div>
@@ -582,6 +631,9 @@
             <div style="display:flex; align-items:baseline; gap:11px;">
               <span style="font-size:11px; font-weight:500; color:var(--faint); flex:none;">{{ s.idx }}</span>
               <input value="{{ s.title }}" onInput="{{ s.onRename }}" readOnly="{{ s.isRef }}" style="flex:1; background:none; border:none; color:var(--ink); font-size:18px; font-weight:600; outline:none; padding:0;" />
+              <sc-if value="{{ s.showFavorite }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ s.onToggleFavorite }}" style="{{ s.favStyle }}" title="Favorite"><iconify-icon icon="{{ s.favIcon }}"></iconify-icon></button>
+              </sc-if>
             </div>
             <div style="font-size:12px; font-weight:500; color:var(--faint); margin:7px 0 11px; padding-left:22px;">{{ s.meta }}</div>
             <div style="display:flex; gap:18px; padding-left:22px;">
@@ -589,6 +641,9 @@
               <button onClick="{{ s.onDup }}" style="background:none; border:none; color:var(--faint); cursor:pointer; font-size:12px; font-weight:500; padding:0;" style-hover="color:var(--ink);">{{ s.dupLabel }}</button>
               <sc-if value="{{ s.showArchive }}" hint-placeholder-val="{{ true }}">
                 <button onClick="{{ s.onArchive }}" style="background:none; border:none; color:var(--faint); cursor:pointer; font-size:12px; font-weight:500; padding:0;" style-hover="color:var(--accent);">{{ s.archiveLabel }}</button>
+              </sc-if>
+              <sc-if value="{{ s.showDelete }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ s.onDelete }}" style="background:none; border:none; color:var(--faint); cursor:pointer; font-size:12px; font-weight:500; padding:0;" style-hover="color:#c0392b;">Delete</button>
               </sc-if>
             </div>
           </div>
@@ -627,7 +682,7 @@
 
   <!-- AUDIO SETUP / CONSENT -->
   <sc-if value="{{ aset.on }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ aset.close }}" style="position:absolute; inset:0; z-index:50; background:var(--scrim); display:flex; align-items:center; justify-content:center; padding:40px; animation:sd-dim .14s ease;">
+    <div style="position:absolute; inset:0; z-index:50; background:var(--scrim); display:flex; align-items:center; justify-content:center; padding:40px; animation:sd-dim .14s ease;">
       <div onClick="{{ stop }}" style="width:560px; max-width:100%; max-height:100%; overflow-y:auto; background:var(--surface); border:1px solid var(--border); border-radius:3px; box-shadow:0 30px 80px -40px var(--shadow); padding:32px 36px;">
         <div style="font-size:13px; font-weight:600; color:var(--accent); margin-bottom:8px;">Voice input · one-time setup</div>
         <h2 style="font-size:22px; font-weight:600; color:var(--ink); margin:0 0 12px;">Speak instead of type</h2>
@@ -658,11 +713,23 @@
         <div style="font-size:12px; color:var(--faint); margin-bottom:24px;">Pricing shown is approximate — check openrouter.ai/models for current rates.</div>
 
         <div style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:6px;">Show cost in — so you always know what you're spending</div>
+        <select value="{{ aset.currencySelectValue }}" onChange="{{ aset.onCurrencySelect }}" style="width:100%; background:var(--inset); border:none; border-radius:2px; color:var(--ink); font-size:14px; padding:10px 12px; outline:none; cursor:pointer; margin-bottom:6px;">
+          <sc-for list="{{ aset.currencyOptions }}" as="cy" hint-placeholder-count="4">
+            <option value="{{ cy.code }}">{{ cy.label }}</option>
+          </sc-for>
+        </select>
+        <div style="display:flex; gap:10px; margin-bottom:4px;">
+          <div style="width:90px; font-size:11px; font-weight:600; color:var(--faint); text-transform:uppercase; letter-spacing:0.03em;">Symbol</div>
+          <div style="flex:1; font-size:11px; font-weight:600; color:var(--faint); text-transform:uppercase; letter-spacing:0.03em;">Exchange rate — units per $1 USD</div>
+          <div style="width:88px;"></div>
+        </div>
         <div style="display:flex; gap:10px; margin-bottom:6px;">
           <input value="{{ aset.currencySymbol }}" onInput="{{ aset.onCurrencySymbol }}" placeholder="$" style="width:90px; background:var(--inset); border:none; border-radius:2px; color:var(--ink); font-size:14px; padding:10px 12px; outline:none;" />
           <input value="{{ aset.currencyRate }}" onInput="{{ aset.onCurrencyRate }}" placeholder="1" style="flex:1; background:var(--inset); border:none; border-radius:2px; color:var(--ink); font-size:14px; padding:10px 12px; outline:none;" />
+          <button onClick="{{ aset.refreshRates }}" style="background:none; border:1px solid var(--border-note); color:var(--text); font-size:13px; padding:8px 12px; border-radius:2px; cursor:pointer; flex:none;" style-hover="border-color:var(--ink); color:var(--ink);">↻ Refresh</button>
         </div>
-        <div style="font-size:12px; color:var(--faint); margin-bottom:16px;">Symbol/code, then how many of it equal $1 USD (e.g. "₹" and "83"). Leave as "$" and "1" for US dollars. A manual rate for now — refreshing it automatically is a later improvement.</div>
+        <div style="font-size:12px; color:var(--faint); margin-bottom:4px;">Pick a currency to prefill its symbol and rate — fine-tune the numbers, or hit Refresh to pull live rates.</div>
+        <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">{{ aset.ratesLabel }}</div>
         <div style="font-size:12px; font-weight:600; color:var(--muted); margin-bottom:24px;">{{ aset.totalSpentLabel }}</div>
 
         <div style="display:flex; align-items:center; gap:16px;">
@@ -676,7 +743,7 @@
 
   <!-- AUDIO DICTATION: recording / transcribing / extracting / review / error -->
   <sc-if value="{{ audio.open }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ audio.cancel }}" style="position:absolute; inset:0; z-index:45; background:var(--scrim); display:flex; align-items:center; justify-content:center; padding:40px; animation:sd-dim .14s ease;">
+    <div style="position:absolute; inset:0; z-index:45; background:var(--scrim); display:flex; align-items:center; justify-content:center; padding:40px; animation:sd-dim .14s ease;">
       <div onClick="{{ stop }}" style="width:680px; max-width:100%; max-height:100%; overflow-y:auto; background:var(--surface); border:1px solid var(--border); border-radius:3px; box-shadow:0 30px 80px -40px var(--shadow); padding:32px 36px;">
 
         <div style="font-size:11px; font-weight:600; color:var(--faint); text-align:right; margin-bottom:10px;">{{ audio.totalSpentLabel }}</div>
@@ -707,13 +774,15 @@
 
         <sc-if value="{{ audio.isReview }}" hint-placeholder-val="{{ false }}">
           <div style="font-size:13px; font-weight:600; color:var(--accent); margin-bottom:8px;">Review — {{ audio.scopeLabel }}</div>
-          <h2 style="font-size:20px; font-weight:600; color:var(--ink); margin:0 0 6px;">Nothing is written until you apply it.</h2>
-          <div style="font-size:12px; font-weight:500; color:var(--muted); margin-bottom:18px;">{{ audio.costLabel }}</div>
+          <h2 style="font-size:20px; font-weight:600; color:var(--ink); margin:0 0 18px;">Nothing is written until you apply it.</h2>
           <sc-for list="{{ audio.rows }}" as="r" hint-placeholder-count="1">
             <div style="border-top:1px solid var(--border); padding:18px 0;">
               <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; gap:12px;">
                 <span style="font-size:15px; font-weight:600; color:var(--ink);">{{ r.label }}</span>
-                <button onClick="{{ r.onToggle }}" style="{{ r.toggleStyle }}">{{ r.toggleLabel }}</button>
+                <div style="display:flex; gap:8px; flex:none;">
+                  <button onClick="{{ r.onCleanup }}" disabled="{{ r.cleaning }}" style="{{ r.cleanupBtnStyle }}" style-hover="border-color:var(--ink); color:var(--ink);">{{ r.cleanupLabel }}</button>
+                  <button onClick="{{ r.onToggle }}" style="{{ r.toggleStyle }}">{{ r.toggleLabel }}</button>
+                </div>
               </div>
               <div style="font-size:12px; color:var(--muted); margin-bottom:10px;">{{ r.def }}</div>
               <sc-if value="{{ r.hasCurrent }}" hint-placeholder-val="{{ false }}">
@@ -723,6 +792,7 @@
               <textarea value="{{ r.proposed }}" onInput="{{ r.onProposed }}" style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:2px; color:var(--ink); font-size:14px; line-height:1.5; padding:10px 12px; outline:none; resize:vertical; min-height:60px;"></textarea>
             </div>
           </sc-for>
+          <div style="font-size:11px; color:var(--faint); margin-top:6px;">{{ audio.costLabel }}</div>
           <div style="display:flex; align-items:center; gap:16px; margin-top:24px;">
             <button onClick="{{ audio.cancel }}" style="background:none; border:none; color:var(--muted); font-size:14px; cursor:pointer;" style-hover="color:var(--ink);">Cancel</button>
             <span style="flex:1;"></span>
@@ -753,6 +823,25 @@ class Component extends DCLogic {
     ];
     this.labels = { '@plot': 'Plot' };
     this.metaP.concat(this.metaC).forEach(([k, l]) => this.labels[k] = l);
+    // Icons — Phosphor set, served via Iconify (icon-set.iconify.design/ph). One per field so a
+    // reader can recognize an element by its glyph before they've even read the label.
+    this.fieldIcons = {
+      premise: 'ph:book-open-text', designingPrinciple: 'ph:compass', bestCharacter: 'ph:user-focus',
+      conflict: 'ph:swords', basicAction: 'ph:arrows-clockwise', characterChange: 'ph:butterfly',
+      moralChoice: 'ph:scales', audienceAppeal: 'ph:heart', wishList: 'ph:sparkle',
+      possibilities: 'ph:tree-structure', challenges: 'ph:mountains', moralArgument: 'ph:megaphone',
+      storyWorld: 'ph:globe-hemisphere-west',
+      'char.weakness': 'ph:heart-break', 'char.need': 'ph:target', 'char.desire': 'ph:flame',
+      'char.opponent': 'ph:shield-warning', 'char.plan': 'ph:map-trifold', 'char.battle': 'ph:sword',
+      'char.selfRevelation': 'ph:lightbulb-filament', 'char.newEquilibrium': 'ph:sun',
+      '@plot': 'ph:map-pin', '@monologue': 'ph:microphone-stage',
+    };
+    this.lensIcons = {
+      guided: 'ph:compass-rose', story: 'ph:book-open', character: 'ph:user',
+      moral: 'ph:scales', causal: 'ph:flow-arrow', plot: 'ph:map-pin',
+      scenes: 'ph:film-strip', monologue: 'ph:microphone-stage', memory: 'ph:clock-counter-clockwise',
+    };
+    this.stateIcons = { OPEN: 'ph:question', WORKING: 'ph:flask', LOCKED: 'ph:check-circle' };
     this.groupOf = {};
     this.metaP.forEach(([k]) => this.groupOf[k] = 'Premise Chapter');
     this.metaC.forEach(([k]) => this.groupOf[k] = 'Character Structure');
@@ -790,18 +879,47 @@ class Component extends DCLogic {
       ['turn', 'One turn', 'The pivot — a realization, a decision, a reversal, mid-speech.'],
       ['hardLine', 'The hard line', 'A short, concrete, unsoftened final beat. No fade-out.'],
     ];
-    // Curated speech-to-text options (approximate pricing — check openrouter.ai/models for current rates).
+    // Curated speech-to-text options — pricing pulled from OpenRouter's live models API (per audio
+    // minute; check openrouter.ai/models for current rates, they do change). OpenRouter has no
+    // genuinely free transcription model at present, so "closest to free" is the honest label.
     this.TRANSCRIBE_MODELS = [
       { id: 'openai/whisper-1', label: 'Whisper v1 — ~$0.006/min · fast, solid default', perMin: 0.006 },
-      { id: 'openai/gpt-4o-transcribe', label: 'GPT-4o Transcribe — ~$0.006/min · higher accuracy', perMin: 0.006 },
-      { id: 'openai/gpt-4o-mini-transcribe', label: 'GPT-4o Mini Transcribe — ~$0.003/min · cheaper & fast', perMin: 0.003 },
+      { id: 'openai/gpt-4o-transcribe', label: 'GPT-4o Transcribe — ~$0.0000025/min · higher accuracy', perMin: 0.0000025 },
+      { id: 'openai/gpt-4o-mini-transcribe', label: 'GPT-4o Mini Transcribe — cheapest · ~$0.00000125/min', perMin: 0.00000125 },
+      { id: 'nvidia/nemotron-3.5-asr-streaming-multilingual-0.6b', label: 'Nemotron 3.5 ASR — closest to free · ~$0.0000033/min (no $0 STT exists on OpenRouter)', perMin: 0.0000033 },
     ];
-    // Curated chapter-sorting options (approximate pricing per million tokens — check openrouter.ai/models for current rates).
+    // Curated chapter-sorting options — pricing per million tokens, pulled from OpenRouter's live
+    // models API (check openrouter.ai/models for current rates).
     this.EXTRACT_MODELS = [
       { id: 'google/gemini-flash-1.5', label: 'Gemini 1.5 Flash — ~$0.075/M in · $0.30/M out · fast & cheap', priceIn: 0.075, priceOut: 0.30 },
       { id: 'anthropic/claude-3.5-sonnet', label: 'Claude 3.5 Sonnet — ~$3/M in · $15/M out · strongest reasoning', priceIn: 3, priceOut: 15 },
       { id: 'openai/gpt-4o-mini', label: 'GPT-4o Mini — ~$0.15/M in · $0.60/M out · balanced', priceIn: 0.15, priceOut: 0.60 },
+      { id: 'mistralai/mistral-nemo', label: 'Mistral Nemo — cheapest paid · ~$0.019/M in · $0.03/M out', priceIn: 0.019, priceOut: 0.03 },
+      { id: 'google/gemma-4-31b-it:free', label: 'Gemma 4 31B (free) — $0 · good for local/dirty testing', priceIn: 0, priceOut: 0 },
     ];
+    // Curated top-10-by-use currencies. Rates below are a bundled seed (see currency-rates.yaml) —
+    // "Refresh exchange rates" in Voice Input Settings pulls live numbers from a free public API
+    // and caches them in localStorage, overriding this seed until the next refresh.
+    this.CURRENCIES = [
+      { code: 'USD', name: 'US Dollar', symbol: '$', rate: 1 },
+      { code: 'EUR', name: 'Euro', symbol: '€', rate: 0.92 },
+      { code: 'JPY', name: 'Japanese Yen', symbol: '¥', rate: 150 },
+      { code: 'GBP', name: 'British Pound', symbol: '£', rate: 0.79 },
+      { code: 'INR', name: 'Indian Rupee', symbol: '₹', rate: 95.22 },
+      { code: 'CNY', name: 'Chinese Yuan', symbol: '¥', rate: 7.24 },
+      { code: 'AUD', name: 'Australian Dollar', symbol: 'A$', rate: 1.52 },
+      { code: 'CAD', name: 'Canadian Dollar', symbol: 'CA$', rate: 1.36 },
+      { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF', rate: 0.88 },
+      { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$', rate: 1.34 },
+    ];
+    this._ratesAsOf = null;
+    try {
+      const cached = JSON.parse(localStorage.getItem('storyDojo_currency_rates_cache') || 'null');
+      if (cached && cached.rates) {
+        this.CURRENCIES.forEach(c => { if (cached.rates[c.code] != null) c.rate = cached.rates[c.code]; });
+        this._ratesAsOf = cached.asOf || null;
+      }
+    } catch (e) {}
     this.craftRules = [
       'Short sentences. Then one long one when it earns it.',
       'Concrete nouns and active verbs — cut adjectives and adverbs.',
@@ -872,28 +990,48 @@ class Component extends DCLogic {
         'Mad Max: Fury Road’s desert scarcity makes water and fuel the currency of every relationship.' ] },
       'char.weakness': { def: 'The inner flaw that holds your character back before the story forces them to grow.', examples: [
         'Elizabeth Bennet’s pride blinds her to Darcy’s true character.',
-        'Woody’s need to be the favorite makes him cruel to Buzz.' ] },
+        'Woody’s need to be the favorite makes him cruel to Buzz.',
+        'Tootsie — Michael Dorsey is a gifted actor, but so arrogant and difficult that no one in New York will hire him.' ] },
       'char.need': { def: 'What your character must learn or become to fix that weakness — usually the thing they resist admitting.', examples: [
         'Michael Corleone needs to accept who his family truly made him, not who he wants to be.',
-        'Elsa needs to stop hiding what makes her different.' ] },
+        'Elsa needs to stop hiding what makes her different.',
+        'Tootsie — Michael needs to learn empathy: what it feels like to be dismissed the way he dismisses women.' ] },
       'char.desire': { def: 'The concrete, external thing they are chasing — you should be able to picture it.', examples: [
         'The Wizard of Oz — to get home to Kansas.',
-        'Raiders of the Lost Ark — to find the Ark before the Nazis.' ] },
+        'Raiders of the Lost Ark — to find the Ark before the Nazis.',
+        'Tootsie — to land the acting job no director in town will give him as himself.' ] },
       'char.opponent': { def: 'Who wants the same thing, or blocks it — and forces your hero to grow by opposing them well.', examples: [
         'Amadeus — Salieri, whose envy of Mozart drives the story.',
-        'Whiplash — the teacher who both breaks and forges the student.' ] },
+        'Whiplash — the teacher who both breaks and forges the student.',
+        'Tootsie — the industry that will not hire "Michael," and eventually the "Dorothy" persona he built to beat it.' ] },
       'char.plan': { def: 'How the character actually intends to get what they want — the strategy, however flawed.', examples: [
         'In Legally Blonde, Elle’s plan is to follow Warner to Harvard Law to win him back.',
-        'In Die Hard, John’s plan is to pick off the terrorists one at a time, alone, from inside the vents.' ] },
+        'In Die Hard, John’s plan is to pick off the terrorists one at a time, alone, from inside the vents.',
+        'Tootsie — Michael disguises himself as a woman, "Dorothy Michaels," to get the part no one would give him.' ] },
       'char.battle': { def: 'The climactic confrontation where the deepest conflict finally plays out, in the open.', examples: [
         'Kill Bill — the Bride and O-Ren Ishii’s duel in the snow settles what words could not.',
-        'A Few Good Men — the courtroom cross-examination is the whole story’s battle in miniature.' ] },
+        'A Few Good Men — the courtroom cross-examination is the whole story’s battle in miniature.',
+        'Tootsie — live, on air, Michael has to reveal that Dorothy was him all along.' ] },
       'char.selfRevelation': { def: 'What the hero finally understands about themselves — the truth the whole story was building toward.', examples: [
         'Star Wars — Luke learns to trust himself and the Force over the machine.',
-        'Frozen — love, not fear, is what controls her power.' ] },
+        'Frozen — love, not fear, is what controls her power.',
+        'Tootsie — Michael realizes he was a better man as Dorothy than he ever was as himself.' ] },
       'char.newEquilibrium': { def: 'Who your character is now that the story is over — the new normal they earned.', examples: [
         'Ebenezer Scrooge ends A Christmas Carol living generously, as a matter of course.',
-        'Elizabeth Bennet ends Pride and Prejudice able to trust her own judgment of character.' ] },
+        'Elizabeth Bennet ends Pride and Prejudice able to trust her own judgment of character.',
+        'Tootsie — Michael listens to Julie as an equal, without needing to perform to be seen.' ] },
+    };
+    // "Speak it like this" — a short formula shown next to the mic in Guided mode, so a
+    // first-time voice input has a shape to reach for instead of a blank prompt.
+    this.speakFormulas = {
+      premise: 'Say it as: "A [person] who [wants/needs X] must [do Y] — or [what\'s at stake]." — Godfather: "The reluctant youngest son of a mafia family becomes the ruthless don he swore he\'d never be."',
+      bestCharacter: 'Say who they are, what they want, and why they\'re the right one to carry this story.',
+      'char.desire': 'Say the one concrete, external thing they\'re chasing — something a camera could actually show.',
+      conflict: 'Say it as "[value] vs. [value]" — the clash underneath the obstacle, not the obstacle itself.',
+      'char.opponent': 'Say who wants the same thing, or blocks it, and why they won\'t back down.',
+      basicAction: 'Say the one thing they do, over and over, in pursuit of what they want.',
+      characterChange: 'Say it as: "starts as [weakness], becomes [new self], through [action]."',
+      moralChoice: 'Say the final decision, and name what it costs them.',
     };
     this.cardPrompts = {
       premise: 'In one line — what is this story about?',
@@ -976,7 +1114,7 @@ class Component extends DCLogic {
     ].map(([from, verb, to]) => ({ id: this.rid(), from, verb, to }));
 
     f['@monologue'] = this.mk('', 'OPEN');
-    return { id: this.rid(), title: 'Escape the Inheritance', createdAt: Date.now(), archived: false, fields: f, onboarded: true,
+    return { id: this.rid(), title: 'Escape the Inheritance', createdAt: Date.now(), archived: false, favorite: false, fields: f, onboarded: true,
       layouts: this.cloneLayouts(), relations, plot: [], scenes: [], symbols: [],
       notes: [{ id: this.rid(), title: 'Premise Chapter', text: 'Complete — enough to move into the next Truby stage. Story DNA; let later work challenge it.', createdAt: Date.now() }],
       monologue: { mode: 'confession', pivot: {
@@ -998,7 +1136,7 @@ class Component extends DCLogic {
     const f = {};
     this.metaP.concat(this.metaC).forEach(([k]) => { f[k] = this.mk('', 'OPEN'); });
     f['@monologue'] = this.mk('', 'OPEN');
-    return { id: this.rid(), title: title || 'Untitled Work', createdAt: Date.now(), archived: false, fields: f, onboarded: false, layouts: this.cloneLayouts(), relations: [], plot: [], scenes: [], symbols: [], notes: [], monologue: this.freshMonologue(), monologueFragments: [] };
+    return { id: this.rid(), title: title || 'Untitled Work', createdAt: Date.now(), archived: false, favorite: false, fields: f, onboarded: false, layouts: this.cloneLayouts(), relations: [], plot: [], scenes: [], symbols: [], notes: [], monologue: this.freshMonologue(), monologueFragments: [] };
   }
 
   // A finished, read-only worked example — for "compare mine to a master."
@@ -1053,22 +1191,76 @@ class Component extends DCLogic {
       ] };
   }
 
+  // A second worked example, structured the way The Godfather is — a darker register than
+  // "A Way Home," so a browsing author can see the same 21 elements support very different stories.
+  seedReferenceGodfather() {
+    const f = {};
+    const R = {
+      premise: 'The reluctant youngest son of a mafia family becomes the ruthless don he swore he\'d never be.',
+      designingPrinciple: 'A war hero tries to stay outside the family business, and is pulled in exactly by trying to protect it.',
+      bestCharacter: 'Michael Corleone — an outsider by choice, and the one member of the family cold enough to do what it takes to save it.',
+      conflict: 'Loyalty to family vs. the self he built apart from it — protecting the people he loves requires becoming the man he never wanted to be.',
+      basicAction: 'Michael keeps stepping in "just this once" to protect his father and family, each time going further than the last.',
+      characterChange: 'An idealistic outsider who wanted no part of the family business becomes a don more ruthless than his father ever was.',
+      moralChoice: 'Michael has his own brother-in-law killed to secure the family, then lies to his wife\'s face about it.',
+      audienceAppeal: 'The universal pull of family loyalty against personal conscience — how far would you go for the people who made you?',
+      wishList: 'Coppola\'s interest in the immigrant experience, and the mafia as a dark mirror of the American dream.',
+      possibilities: 'A version where Michael stays out entirely; a version where Sonny survives to lead instead; a version centered on Vito\'s own rise.',
+      challenges: 'An assassination attempt on his father; a corrupt police captain; rival families circling; his own family\'s quiet expectation that he\'ll be the one.',
+      moralArgument: 'Power, once you\'ll do anything to protect what you love, corrupts exactly what you were protecting.',
+      storyWorld: 'The wedding that opens the film (warmth, family, ritual) against the baptism that closes it (Michael becomes a godfather in both senses, intercut with murders) — the two ceremonies bookend his transformation.',
+      'char.weakness': 'Believes he can do the family\'s worst work without becoming the family\'s worst impulse.',
+      'char.need': 'To recognize there is no clean way to hold absolute power — the belief that he can stay clean is itself the trap.',
+      'char.desire': 'To protect his father and family from being destroyed by their enemies.',
+      'char.opponent': 'Every rival family boss, but ultimately his own inherited role — the throne he always said he\'d never sit in.',
+      'char.plan': 'Take over the family\'s defense personally, starting at the hospital, escalating step by step until he controls everything.',
+      'char.battle': 'The baptism-day massacre — Michael eliminates every rival head in one coordinated strike while standing as godfather in church.',
+      'char.selfRevelation': 'He never has one — that\'s the tragedy the film argues: he completes the transformation without ever facing what it cost.',
+      'char.newEquilibrium': 'Michael sits as the new don; the door closes on Kay, sealing him off from the family he set out to protect.',
+    };
+    const monoDraft = 'My father did business with senators and judges. He never asked them for a second favor before the first was even owed back. That\'s not power. That\'s patience, dressed up as power, and I used to think I\'d never need to learn it.\n\nI told Kay once that was my family, not me. I believed it when I said it. I was the one who was going to be different — college, the war, a life she and I would build somewhere nobody had to kneel to anybody.\n\nThen a man tried to have my father killed in a hospital bed, and the only question that mattered was who in that room could be trusted to act. Not the smartest question. Not the safest one. The only one that counted.\n\nI keep telling myself this is the last time. That there\'s a version of this where I do what has to be done now, and then I close the door on it, and go back to being the man Kay married. I don\'t think I believe that anymore. I think the door only closes one way.\n\nMy father wanted this life to end with me. I understand now that wanting a thing to end and building the machine that guarantees it never will are the same gesture, if you\'re not careful. I was not careful. I was exact.';
+    f['@monologue'] = this.mk(monoDraft, 'LOCKED');
+    Object.keys(R).forEach(k => { f[k] = this.mk(R[k], 'LOCKED'); });
+    const relations = [
+      ['premise', 'expresses', 'designingPrinciple'],
+      ['char.weakness', 'obstructs', 'char.need'],
+      ['conflict', 'forces', 'moralChoice'],
+      ['basicAction', 'produces', 'characterChange'],
+      ['char.desire', 'attracts', 'char.opponent'],
+    ].map(([from, verb, to]) => ({ id: this.rid(), from, verb, to }));
+    return { id: 'ref-the-reluctant-heir', title: 'The Reluctant Heir (worked example)', createdAt: Date.now(), archived: false, fields: f, onboarded: true, reference: true,
+      layouts: this.cloneLayouts(), relations, plot: [], scenes: [], symbols: [],
+      notes: [{ id: this.rid(), title: 'Reference', text: 'A finished worked example, structured the way The Godfather is — read-only, so it never mixes with your drafts. A darker register than "A Way Home," to show the same 21 elements flex across very different stories.', createdAt: Date.now() }],
+      monologue: { mode: 'deliberation', pivot: {
+        pressure: 'Alone the night after the hospital, running the family\'s next move through his head for the first time.',
+        iWant: 'For this to be the one exception — the one time he steps in, and then goes back to the life he was building.',
+        verboten: 'That some part of him is good at this, and has been waiting for a reason.',
+        turn: 'He realizes wanting the danger to end and building the machine that guarantees it never will are the same gesture.',
+        hardLine: '"My father wanted this to end with me. I was not careful. I was exact."',
+      } },
+      monologueFragments: [
+        { id: this.rid(), text: 'He counts favors the way other men count money — quietly, and never out loud.', createdAt: Date.now() - 6 * 86400000 },
+        { id: this.rid(), text: '"It\'s not personal, it\'s strictly business" — the line he uses right before it gets personal.', createdAt: Date.now() - 3 * 86400000 },
+      ] };
+  }
+
   freshUI() { let theme = 'dark'; try { theme = localStorage.getItem('storyDojo_theme') || 'dark'; } catch (e) {} return { lens: 'story', focusKey: null, panX: 72, panY: 28, scale: 0.76, showExport: false, exportFmt: 'md', showStories: false, noteType: 'note', noteDraft: '', newTitle: '', newText: '', copied: false, relVerb: 'causes', relTarget: '', viewMode: false, theme, onboardOpen: false, onboardStep: 0, toast: null, guidedIndex: 0, fragmentDraft: '',
     audio: this.freshAudio(), needsAudioSetup: false, audioSetupKey: '', audioSetupTranscribeModel: '', audioSetupExtractModel: '',
-    audioSetupCurrencySymbol: '', audioSetupCurrencyRate: '', viewCardKey: null }; }
-  freshAudio() { return { open: false, phase: 'idle', scope: null, targetKey: null, group: null, seconds: 0, transcript: '', rows: [], error: null, cost: 0 }; }
+    audioSetupCurrencyCode: '', audioSetupCurrencySymbol: '', audioSetupCurrencyRate: '', audioSetupRatesStatus: null, viewCardKey: null }; }
+  freshAudio() { return { open: false, phase: 'idle', scope: null, targetKey: null, group: null, rawMeta: null, seconds: 0, transcript: '', rows: [], error: null, cost: 0 }; }
   loadState() {
     let saved = null;
     try { saved = JSON.parse(localStorage.getItem('storyDojo_v2')); } catch (e) {}
     if (saved && saved.stories && saved.stories.length) {
       const stories = saved.stories;
       if (!stories.some(x => x.reference)) stories.push(this.seedReference());
-      // Migrate stories saved before Monologue Studio / the Parking Lot existed.
-      stories.forEach(st => { if (!st.fields['@monologue']) st.fields['@monologue'] = this.mk('', 'OPEN'); if (!st.monologue) st.monologue = this.freshMonologue(); if (!st.monologueFragments) st.monologueFragments = []; });
+      if (!stories.some(x => x.id === 'ref-the-reluctant-heir')) stories.push(this.seedReferenceGodfather());
+      // Migrate stories saved before Monologue Studio / the Parking Lot / favorites existed.
+      stories.forEach(st => { if (!st.fields['@monologue']) st.fields['@monologue'] = this.mk('', 'OPEN'); if (!st.monologue) st.monologue = this.freshMonologue(); if (!st.monologueFragments) st.monologueFragments = []; if (st.favorite === undefined) st.favorite = false; });
       return { stories, currentId: saved.currentId || saved.stories[0].id, ui: this.freshUI() };
     }
     const s = this.seedStory();
-    return { stories: [s, this.seedReference()], currentId: s.id, ui: this.freshUI() };
+    return { stories: [s, this.seedReference(), this.seedReferenceGodfather()], currentId: s.id, ui: this.freshUI() };
   }
   persist() { try { localStorage.setItem('storyDojo_v2', JSON.stringify({ stories: this.state.stories, currentId: this.state.currentId })); } catch (e) {} }
   cur() { return this.state.stories.find(s => s.id === this.state.currentId) || this.state.stories[0]; }
@@ -1100,6 +1292,59 @@ class Component extends DCLogic {
     window.addEventListener('mouseup', this._onUp);
     window.addEventListener('keydown', this._onKey);
     this.applyTheme();
+    if (!this._ratesAsOf) this.loadSeedRates();
+  }
+  // One-time, best-effort load of the bundled rate sheet (currency-rates.yaml) as a seed —
+  // silently does nothing if the file can't be fetched (e.g. opened via file://). A live
+  // "Refresh exchange rates" fetch always takes precedence once the user runs one.
+  async loadSeedRates() {
+    try {
+      const res = await fetch('./currency-rates.yaml');
+      if (!res.ok) return;
+      const text = await res.text();
+      const parsed = this.parseRatesYaml(text);
+      if (!parsed || !parsed.rates) return;
+      this.CURRENCIES.forEach(c => { if (parsed.rates[c.code] != null) c.rate = parsed.rates[c.code]; });
+      this._ratesAsOf = parsed.asOf || this._ratesAsOf;
+      this.forceUpdate && this.forceUpdate();
+    } catch (e) {}
+  }
+  // Minimal parser for our own flat "key: value" / one-level "rates:\n  CODE: n" YAML shape —
+  // not a general-purpose YAML parser, just enough for currency-rates.yaml.
+  parseRatesYaml(text) {
+    const out = { rates: {} };
+    let inRates = false;
+    text.split('\n').forEach(line => {
+      if (!line.trim() || line.trim().startsWith('#')) return;
+      if (/^rates:\s*$/.test(line)) { inRates = true; return; }
+      const indented = /^\s+/.test(line);
+      if (inRates && indented) {
+        const m = line.match(/^\s+([A-Z]{3}):\s*([\d.]+)/);
+        if (m) out.rates[m[1]] = parseFloat(m[2]);
+        return;
+      }
+      inRates = false;
+      const m2 = line.match(/^([A-Za-z]+):\s*(.+)$/);
+      if (m2) out[m2[1]] = m2[2].trim();
+    });
+    return out;
+  }
+  async refreshExchangeRates() {
+    this.setUI({ audioSetupRatesStatus: 'loading' });
+    try {
+      const res = await fetch('https://open.er-api.com/v6/latest/USD');
+      if (!res.ok) throw new Error('bad response');
+      const data = await res.json();
+      if (!data || !data.rates) throw new Error('no rates');
+      const asOf = data.time_last_update_utc || new Date().toUTCString();
+      this.CURRENCIES.forEach(c => { if (data.rates[c.code] != null) c.rate = data.rates[c.code]; });
+      this._ratesAsOf = asOf;
+      try { localStorage.setItem('storyDojo_currency_rates_cache', JSON.stringify({ asOf, rates: data.rates })); } catch (e) {}
+      const u = this.state.ui, match = this.CURRENCIES.find(c => c.code === u.audioSetupCurrencyCode);
+      this.setUI({ audioSetupRatesStatus: 'done', audioSetupCurrencyRate: match ? String(match.rate) : u.audioSetupCurrencyRate });
+    } catch (e) {
+      this.setUI({ audioSetupRatesStatus: 'error' });
+    }
   }
   componentWillUnmount() { window.removeEventListener('mousemove', this._onMove); window.removeEventListener('mouseup', this._onUp); window.removeEventListener('keydown', this._onKey); }
 
@@ -1218,19 +1463,19 @@ class Component extends DCLogic {
   fmtSeconds(s) { const m = Math.floor(s / 60), sec = s % 60; return m + ':' + String(sec).padStart(2, '0'); }
 
   // ---- Spend tracking: keep viewers at ease about what voice input actually costs them ----
-  getCurrency() { let symbol = '$', rate = 1; try { symbol = localStorage.getItem('storyDojo_currency_symbol') || '$'; rate = parseFloat(localStorage.getItem('storyDojo_currency_rate')) || 1; } catch (e) {} return { symbol, rate }; }
-  setCurrency(symbol, rate) { try { localStorage.setItem('storyDojo_currency_symbol', symbol || '$'); localStorage.setItem('storyDojo_currency_rate', String(rate > 0 ? rate : 1)); } catch (e) {} }
+  getCurrency() { let code = 'USD', symbol = '$', rate = 1; try { code = localStorage.getItem('storyDojo_currency_code') || 'USD'; symbol = localStorage.getItem('storyDojo_currency_symbol') || '$'; rate = parseFloat(localStorage.getItem('storyDojo_currency_rate')) || 1; } catch (e) {} return { code, symbol, rate }; }
+  setCurrency(code, symbol, rate) { try { localStorage.setItem('storyDojo_currency_code', code || 'CUSTOM'); localStorage.setItem('storyDojo_currency_symbol', symbol || '$'); localStorage.setItem('storyDojo_currency_rate', String(rate > 0 ? rate : 1)); } catch (e) {} }
   getTotalSpendUSD() { try { return parseFloat(localStorage.getItem('storyDojo_spend_usd')) || 0; } catch (e) { return 0; } }
   addSpendUSD(usd) { if (!usd) return; const cur = this.getTotalSpendUSD() + usd; try { localStorage.setItem('storyDojo_spend_usd', String(cur)); } catch (e) {} }
   formatMoney(usd) { const { symbol, rate } = this.getCurrency(); const v = (usd || 0) * rate; const digits = v > 0 && v < 0.01 ? 4 : 2; return symbol + v.toFixed(digits); }
   estimateTranscribeCost(seconds) { const m = this.TRANSCRIBE_MODELS.find(x => x.id === this.getTranscribeModel()); return m ? (seconds / 60) * m.perMin : 0; }
-  estimateExtractCost(usage) { if (!usage) return 0; const m = this.EXTRACT_MODELS.find(x => x.id === this.getExtractModel()); if (!m) return 0; return ((usage.prompt_tokens || 0) / 1e6) * m.priceIn + ((usage.completion_tokens || 0) / 1e6) * m.priceOut; }
+  estimateExtractCost(usage, modelId) { if (!usage) return 0; const m = this.EXTRACT_MODELS.find(x => x.id === (modelId || this.getExtractModel())); if (!m) return 0; return ((usage.prompt_tokens || 0) / 1e6) * m.priceIn + ((usage.completion_tokens || 0) / 1e6) * m.priceOut; }
 
   audioSetupDefaults(keyOverride) {
     const c = this.getCurrency();
     return { needsAudioSetup: true, audioSetupKey: keyOverride !== undefined ? keyOverride : this.getOpenRouterKey(),
       audioSetupTranscribeModel: this.getTranscribeModel(), audioSetupExtractModel: this.getExtractModel(),
-      audioSetupCurrencySymbol: c.symbol, audioSetupCurrencyRate: String(c.rate) };
+      audioSetupCurrencyCode: c.code, audioSetupCurrencySymbol: c.symbol, audioSetupCurrencyRate: String(c.rate) };
   }
   openAudioSettings() { this.setUI(this.audioSetupDefaults()); }
   closeAudioSetup() { this.setUI({ needsAudioSetup: false }); this._pendingDictation = null; }
@@ -1240,7 +1485,8 @@ class Component extends DCLogic {
     this.setOpenRouterKey(k);
     this.setTranscribeModel((u.audioSetupTranscribeModel || 'openai/whisper-1').trim());
     if ((u.audioSetupExtractModel || '').trim()) this.setExtractModel(u.audioSetupExtractModel.trim());
-    this.setCurrency((u.audioSetupCurrencySymbol || '$').trim(), parseFloat(u.audioSetupCurrencyRate) || 1);
+    const curCode = (u.audioSetupCurrencyCode && u.audioSetupCurrencyCode !== '__custom__') ? u.audioSetupCurrencyCode : 'CUSTOM';
+    this.setCurrency(curCode, (u.audioSetupCurrencySymbol || '$').trim(), parseFloat(u.audioSetupCurrencyRate) || 1);
     this.setUI({ needsAudioSetup: false });
     const pending = this._pendingDictation; this._pendingDictation = null;
     if (pending) this.startDictation(pending.scope, pending.arg);
@@ -1262,7 +1508,8 @@ class Component extends DCLogic {
   }
   beginDictation(scope, arg) {
     this.setUI({ audio: { ...this.freshAudio(), open: true, phase: 'recording', scope,
-      targetKey: scope === 'field' ? arg : null, group: scope === 'chapter' ? arg : null } });
+      targetKey: scope === 'field' ? arg : null, group: scope === 'chapter' ? arg : null,
+      rawMeta: scope === 'raw' ? arg : null } });
     this.beginRecording();
   }
   async beginRecording() {
@@ -1306,6 +1553,7 @@ class Component extends DCLogic {
     this.addSpendUSD(tcCost);
     this.setUI({ audio: { ...a, transcript: text } });
     if (a.scope === 'field') { this.finishFieldRows(text, tcCost); return; }
+    if (a.scope === 'raw') { this.finishRawRow(text, tcCost); return; }
     this.setUI({ audio: { ...this.state.ui.audio, phase: 'extracting' } });
     try {
       const { obj, usage } = await this.extractChapter(text, a.group);
@@ -1325,6 +1573,65 @@ class Component extends DCLogic {
       { key, label: this.labels[key], def: (this.concepts[key] && this.concepts[key].def) || '', currentText: cur, proposed: text, accept: true }
     ] } });
   }
+  // Generic dictate-into-any-textbox target: notes, fragment drafts, plot/scene compose boxes —
+  // anything that isn't one of the 21 structured fields. Applied via the caller's own callback,
+  // not applyFieldText, since there's no versions/current shape to preserve here.
+  finishRawRow(text, cost) {
+    const a = this.state.ui.audio, meta = a.rawMeta || {};
+    this.setUI({ audio: { ...this.state.ui.audio, phase: 'review', cost: cost || 0, rows: [
+      { key: '@raw-target', label: meta.label || 'Text', def: meta.hint || '', currentText: meta.current || '', proposed: text, accept: true }
+    ] } });
+  }
+  // Local-only pass, used as a fallback when the AI cleanup call fails or there's no key:
+  // strips filler words, fixes capitalization/spacing, adds terminal punctuation. On its own
+  // this does nothing for text that's already well-formed (repeated words, missing articles,
+  // awkward phrasing survive it) — that's what cleanupRow's AI pass is for.
+  cleanupTranscript(text) {
+    if (!text) return text;
+    let t = text;
+    t = t.replace(/\b(um+|uh+|erm+|uhh+|umm+|you know|i mean)\b,?/gi, ' ');
+    t = t.replace(/\blike,\s/gi, ' ');
+    t = t.replace(/[ \t]+/g, ' ').replace(/\s+([,.!?])/g, '$1').trim();
+    t = t.replace(/(^\s*[a-z]|[.!?]\s+[a-z])/g, (m) => m.toUpperCase());
+    if (t && !/[.!?]$/.test(t)) t += '.';
+    return t;
+  }
+  // AI-assisted cleanup: fixes the flaws raw voice dictation actually has — stutters, repeated
+  // words ("who, who"), dropped articles, run-ons — that the local heuristic above can't reach.
+  // Falls back to the local pass if there's no key/model or the call fails, so the button
+  // always does *something* visible rather than silently no-op.
+  async cleanupRow(idx) {
+    const before = this.state.ui.audio.rows[idx];
+    if (!before) return;
+    const original = before.proposed;
+    this.setAudioRowCleaning(idx, true);
+    let cleaned = null;
+    if (this.hasOpenRouterKey()) {
+      try { cleaned = await this.aiCleanupText(original); } catch (e) { cleaned = null; }
+    }
+    if (!cleaned || !cleaned.trim()) cleaned = this.cleanupTranscript(original);
+    // the row (or the whole dialog) may have moved on while the request was in flight
+    const cur = this.state.ui.audio.rows[idx];
+    if (cur) this.editAudioRow(idx, cleaned);
+    this.setAudioRowCleaning(idx, false);
+  }
+  setAudioRowCleaning(idx, val) {
+    const a = this.state.ui.audio; if (!a.rows[idx]) return;
+    const rows = a.rows.slice(); rows[idx] = { ...rows[idx], cleaning: val };
+    this.setUI({ audio: { ...a, rows } });
+  }
+  async aiCleanupText(text) {
+    const key = this.getOpenRouterKey(), model = this.getExtractModel() || 'google/gemma-4-31b-it:free';
+    const sys = "Clean up this voice-dictated text: remove filler words and stutters, fix repeated words, dropped articles, and obvious grammar slips, and correct punctuation. Preserve the author's own meaning, tone, and phrasing as closely as possible — do not rewrite, expand, or add content that wasn't said. Reply with ONLY the cleaned text, nothing else.";
+    const body = { model, messages: [ { role: 'system', content: sys }, { role: 'user', content: text } ] };
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!res.ok) throw new Error('request failed (' + res.status + ')');
+    const data = await res.json();
+    const content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+    const cost = this.estimateExtractCost(data.usage, model);
+    if (cost) { this.addSpendUSD(cost); this.setUI({ audio: { ...this.state.ui.audio, cost: (this.state.ui.audio.cost || 0) + cost } }); }
+    return content.trim().replace(/^["']|["']$/g, '');
+  }
   finishChapterRows(map, cost) {
     const a = this.state.ui.audio, keys = this.groupKeys(a.group);
     const rows = keys.map(([k, l]) => {
@@ -1338,7 +1645,12 @@ class Component extends DCLogic {
   editAudioRow(idx, text) { const a = this.state.ui.audio, rows = a.rows.slice(); rows[idx] = { ...rows[idx], proposed: text }; this.setUI({ audio: { ...a, rows } }); }
   applyAudioReview() {
     const a = this.state.ui.audio; let n = 0;
-    a.rows.forEach(r => { if (r.accept && !r.raw && (r.proposed || '').trim()) { this.applyFieldText(r.key, r.proposed); n++; } });
+    if (a.scope === 'raw') {
+      const row = a.rows[0];
+      if (row && row.accept && (row.proposed || '').trim() && a.rawMeta && a.rawMeta.onApply) { a.rawMeta.onApply(row.proposed); n = 1; }
+    } else {
+      a.rows.forEach(r => { if (r.accept && !r.raw && (r.proposed || '').trim()) { this.applyFieldText(r.key, r.proposed); n++; } });
+    }
     this.setUI({ audio: this.freshAudio() });
     if (n > 0) this.showToast(n === 1 ? '1 field updated.' : n + ' fields updated.');
   }
@@ -1387,6 +1699,16 @@ class Component extends DCLogic {
   openStory(id) { this.setState({ currentId: id, ui: { ...this.state.ui, showStories: false, focusKey: null } }); this.persist(); }
   renameStory(id, title) { const st = this.state.stories.find(x => x.id === id); if (st.reference) return; st.title = title; this.commit(); }
   archiveStory(id) { const s = this.state.stories.find(x => x.id === id); s.archived = !s.archived; if (s.archived && this.state.currentId === id) { const alt = this.state.stories.find(x => !x.archived && x.id !== id); if (alt) this.state.currentId = alt.id; } this.commit(); }
+  toggleFavorite(id) { const s = this.state.stories.find(x => x.id === id); if (!s || s.reference) return; s.favorite = !s.favorite; this.commit(); }
+  deleteStory(id) {
+    const s = this.state.stories.find(x => x.id === id);
+    if (!s || s.reference) return;
+    if (!window.confirm('Permanently delete "' + s.title + '"? This can\'t be undone — everything in it (drafts, notes, relationships) will be lost.')) return;
+    const remaining = this.state.stories.filter(x => x.id !== id);
+    const nextCurrent = this.state.currentId === id ? ((remaining.find(x => !x.archived && !x.reference) || remaining[0]).id) : this.state.currentId;
+    this.setState({ stories: remaining, currentId: nextCurrent });
+    this.persist();
+  }
 
   openExport() { this.setUI({ showExport: true, copied: false }); }
   printFlashcards() { this.setUI({ viewMode: true, showExport: false, showStories: false, focusKey: null }); setTimeout(() => window.print(), 80); }
@@ -1469,7 +1791,7 @@ class Component extends DCLogic {
     const isView = !!u.viewMode;
     const lensId = lens.id, isMap = !isView && lens.kind === 'map', isWork = !isView && lens.kind === 'work', isMemory = !isView && lens.kind === 'memory', isGuided = !isView && lens.kind === 'guided', isMonologue = !isView && lens.kind === 'monologue';
 
-    const lenses = isView ? [] : this.LENSES.map(l => ({ name: l.name, onClick: () => this.setLens(l.id),
+    const lenses = isView ? [] : this.LENSES.map(l => ({ name: l.name, icon: this.lensIcons[l.id] || 'ph:circle', onClick: () => this.setLens(l.id),
       style: { background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0 5px', fontSize: '14px', fontWeight: u.lens === l.id ? 600 : 400, letterSpacing: '-0.005em', color: u.lens === l.id ? 'var(--ink)' : 'var(--muted)', borderBottom: u.lens === l.id ? '1px solid var(--ink)' : '1px solid transparent', marginBottom: '-1px' } }));
 
     // MAP
@@ -1493,7 +1815,7 @@ class Component extends DCLogic {
         if (truncated) { ts.WebkitMaskImage = 'linear-gradient(180deg,#000 64%,transparent)'; ts.maskImage = 'linear-gradient(180deg,#000 64%,transparent)'; }
         const dim = !isPlot && !isEssential && !spineComplete && !(f && (this.ftext(f)||'').trim());
         return {
-          key, name: this.labels[key], text: this.objText(key), titleAttr: (this.concepts[key] && this.concepts[key].def) || '',
+          key, name: this.labels[key], icon: this.fieldIcons[key] || 'ph:circle', text: this.objText(key), titleAttr: (this.concepts[key] && this.concepts[key].def) || '',
           wrap: { position: 'absolute', left: pos.x + 'px', top: pos.y + 'px', width: maxW + 'px', padding: '11px 15px 13px', borderLeft: this.spineFor(st), background: this.bgFor(st), cursor: 'grab', userSelect: 'none', opacity: dim ? 0.48 : 1, transition: 'opacity .12s ease, background .12s ease' },
           mark: mk.ch, markStyle: mk.style, textStyle: ts,
           truncated, cueStyle: { fontSize: '11px', fontWeight: 500, color: 'var(--faint)', marginTop: '3px' },
@@ -1534,7 +1856,7 @@ class Component extends DCLogic {
         const chain = f.versions.map((v, i) => ({ n: 'V' + (i + 1), text: v.text || '—',
           rowStyle: { display: 'flex', gap: '12px', padding: '5px 0', alignItems: 'baseline' },
           textStyle: { fontSize: i === f.current ? '18px' : '15px', fontWeight: i === f.current ? 500 : 400, lineHeight: '1.35', fontStyle: i === f.current ? 'normal' : 'italic', color: i === f.current ? 'var(--ink)' : 'var(--faint)' } }));
-        return { name: label, meta: this.stateOf(f).toLowerCase() + ' · ' + (multi ? f.versions.length + ' drafts' : '1 draft') + ' · ' + this.fmt(f.updatedAt), chain, onOpen: () => { this.setUI({ lens: 'story' }); this.openFocus(k); } };
+        return { name: label, icon: this.fieldIcons[k] || 'ph:circle', meta: this.stateOf(f).toLowerCase() + ' · ' + (multi ? f.versions.length + ' drafts' : '1 draft') + ' · ' + this.fmt(f.updatedAt), chain, onOpen: () => { this.setUI({ lens: 'story' }); this.openFocus(k); } };
       });
     }
 
@@ -1549,9 +1871,10 @@ class Component extends DCLogic {
       if (!done) {
         const key = this.GUIDED_ORDER[gi], fd = s.fields[key], st = this.stateOf(fd), concept = this.concepts[key] || { def: '', examples: [] };
         const linkBtn2 = (active) => ({ background: 'none', border: 'none', padding: '2px 0', cursor: 'pointer', fontSize: '13px', fontWeight: active ? 600 : 400, color: active ? 'var(--ink)' : 'var(--muted)', borderBottom: active ? '2px solid var(--ink)' : '2px solid transparent' });
-        gd.label = this.labels[key]; gd.def = concept.def; gd.examples = concept.examples.map(ex => ({ text: ex }));
+        gd.label = this.labels[key]; gd.icon = this.fieldIcons[key] || 'ph:circle'; gd.def = concept.def; gd.examples = concept.examples.map(ex => ({ text: ex }));
+        gd.formula = this.speakFormulas[key] || ''; gd.hasFormula = !!gd.formula;
         gd.text = this.ftext(fd); gd.onText = (e) => this.guidedField(key, e);
-        gd.stateOptions = [['OPEN', 'I don\'t know yet'], ['WORKING', 'Hypothesis'], ['LOCKED', 'Decision']].map(([status, label]) => ({ label, onClick: () => this.setStatus(key, status), style: linkBtn2(fd.status === status) }));
+        gd.stateOptions = [['OPEN', 'I don\'t know yet'], ['WORKING', 'Hypothesis'], ['LOCKED', 'Decision']].map(([status, label]) => ({ label, icon: this.stateIcons[status], onClick: () => this.setStatus(key, status), style: linkBtn2(fd.status === status) }));
         gd.canDictate = !this.isRefLocked(); gd.onDictate = () => this.startDictation('field', key);
       } else {
         gd.synthesisText = this.synthesis() || 'Answer a few of the questions above and your story will start to take shape here.';
@@ -1579,7 +1902,7 @@ class Component extends DCLogic {
       const linkBtn3 = (active) => ({ background: 'none', border: 'none', padding: '2px 0', cursor: 'pointer', fontSize: '13px', fontWeight: active ? 600 : 400, color: active ? 'var(--ink)' : 'var(--muted)', borderBottom: active ? '2px solid var(--ink)' : '2px solid transparent' });
       md.text = this.ftext(mf); md.onText = (e) => this.setFieldText('@monologue', e.target.value);
       md.canDictate = !md.readOnly; md.onDictate = () => this.startDictation('field', '@monologue');
-      md.stateOptions = [['OPEN', 'Question'], ['WORKING', 'Hypothesis'], ['LOCKED', 'Decision']].map(([status, label]) => ({ label, onClick: () => this.setStatus('@monologue', status), style: linkBtn3(mf.status === status) }));
+      md.stateOptions = [['OPEN', 'Question'], ['WORKING', 'Hypothesis'], ['LOCKED', 'Decision']].map(([status, label]) => ({ label, icon: this.stateIcons[status], onClick: () => this.setStatus('@monologue', status), style: linkBtn3(mf.status === status) }));
       md.commitVersion = () => this.commitVersion('@monologue');
       md.hasDrafts = mf.versions.length > 1;
       md.versions = mf.versions.map((v, i) => ({ n: 'V' + (i + 1), currentTag: i === mf.current ? ' · current' : '', when: this.fmt(v.createdAt), text: v.text, onUse: () => this.useVersion('@monologue', i),
@@ -1590,6 +1913,8 @@ class Component extends DCLogic {
       // Parking Lot: unstructured fragments — quick captures, referred back to later.
       const frags = s.monologueFragments || [];
       md.fragmentDraft = u.fragmentDraft || ''; md.setFragmentDraft = (e) => this.setUI({ fragmentDraft: e.target.value }); md.addFragment = () => this.addFragment();
+      md.canDictateFragment = !md.readOnly;
+      md.onDictateFragment = () => this.startDictation('raw', { label: 'Parking lot fragment', current: u.fragmentDraft || '', onApply: (t) => this.setUI({ fragmentDraft: t }) });
       md.hasFragments = frags.length > 0; md.noFragments = frags.length === 0;
       md.fragments = frags.map(fr => ({ text: fr.text, when: this.fmt(fr.createdAt),
         onUse: () => this.useFragmentInDraft(fr.id), onRemove: () => this.removeFragment(fr.id) }));
@@ -1601,7 +1926,7 @@ class Component extends DCLogic {
       focusOn = true; const key = u.focusKey, fd = s.fields[key], st = this.stateOf(fd), w = this.wt(key), mk = this.markFor(st);
       const stateLabels = { DECISION: 'decision', HYPOTHESIS: 'hypothesis', QUESTION: 'question', DISCOVERY: 'discovery' };
       const linkBtn = (active) => ({ background: 'none', border: 'none', padding: '2px 0', cursor: 'pointer', fontSize: '14px', fontWeight: active ? 600 : 400, color: active ? 'var(--ink)' : 'var(--muted)', borderBottom: active ? '2px solid var(--ink)' : '2px solid transparent' });
-      const stOpts = [['OPEN','Question'],['WORKING','Hypothesis'],['LOCKED','Decision']].map(([status, label]) => ({ label, onClick: () => this.setStatus(key, status), style: linkBtn(fd.status === status) }));
+      const stOpts = [['OPEN','Question'],['WORKING','Hypothesis'],['LOCKED','Decision']].map(([status, label]) => ({ label, icon: this.stateIcons[status], onClick: () => this.setStatus(key, status), style: linkBtn(fd.status === status) }));
       const noteStyle = (t) => ({ position: 'relative', marginBottom: '9px', padding: '12px 30px 12px 15px', borderRadius: '2px',
         background: t === 'ai' ? 'var(--inset-accent)' : 'var(--inset)',
         borderLeft: t === 'question' ? '2px solid var(--ink)' : (t === 'ai' ? '2px dashed var(--accent-note)' : '2px solid var(--border-note)') });
@@ -1618,8 +1943,9 @@ class Component extends DCLogic {
       f = {
         sheetStyle: { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '3px', boxShadow: '0 24px 70px -36px var(--shadow)', padding: '36px 42px 32px' },
         readOnly: !!s.reference,
-        name: this.labels[key], stateLabel: stateLabels[st], mark: mk.ch, markStyle: mk.style,
+        name: this.labels[key], icon: this.fieldIcons[key] || 'ph:circle', stateLabel: stateLabels[st], mark: mk.ch, markStyle: mk.style,
         conceptDef: concept.def, hasConceptDef: !!concept.def,
+        formula: this.speakFormulas[key] || '', hasFormula: !!this.speakFormulas[key],
         examples: concept.examples.map(ex => ({ text: ex })),
         text: this.ftext(fd), onText: (e) => this.setFieldText(key, e.target.value),
         canDictate: !s.reference, onDictate: () => this.startDictation('field', key),
@@ -1636,11 +1962,14 @@ class Component extends DCLogic {
         notes: fd.notes.map(n => ({ tag: tagFor(n.type), tagStyle: tagStyleFor(n.type), text: n.text, style: noteStyle(n.type), onRemove: () => this.removeNote(key, n.id) })),
         noteTypeOpts: [['note','Note'],['question','Question'],['ai','AI suggestion']].map(([v, label]) => ({ label, onClick: () => this.setUI({ noteType: v }), style: linkBtn(u.noteType === v) })),
         noteDraft: u.noteDraft || '', setNoteDraft: (e) => this.setUI({ noteDraft: e.target.value }), addNote: () => this.addNote(key),
+        onDictateNote: () => this.startDictation('raw', { label: 'Margin note', current: u.noteDraft || '', onApply: (t) => this.setUI({ noteDraft: t }) }),
       };
     }
 
     // WORKS
-    const active = this.state.stories.filter(x => !x.archived && !x.reference), arch = this.state.stories.filter(x => x.archived && !x.reference), refs = this.state.stories.filter(x => x.reference);
+    const active = this.state.stories.filter(x => !x.archived && !x.reference)
+      .sort((a, b) => (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0));
+    const arch = this.state.stories.filter(x => x.archived && !x.reference), refs = this.state.stories.filter(x => x.reference);
     const storyList = refs.concat(active).concat(arch).map((st2) => {
       const isCur = st2.id === this.state.currentId;
       const nLocked = Object.keys(st2.fields).filter(k => st2.fields[k].status === 'LOCKED').length;
@@ -1652,6 +1981,9 @@ class Component extends DCLogic {
         onRename: (e) => this.renameStory(st2.id, e.target.value), onOpen: () => this.openStory(st2.id), onDup: () => this.dupStory(st2.id), onArchive: () => this.archiveStory(st2.id),
         openLabel: isCur ? 'Open now' : 'Open', archiveLabel: st2.archived ? 'Restore' : 'Archive', showArchive: !st2.reference,
         dupLabel: st2.reference ? 'Copy into my works' : 'Duplicate',
+        showFavorite: !st2.reference, favorite: !!st2.favorite, onToggleFavorite: () => this.toggleFavorite(st2.id),
+        favIcon: st2.favorite ? 'ph:star-fill' : 'ph:star', favStyle: { background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '15px', color: st2.favorite ? 'var(--accent)' : 'var(--faint)', flex: 'none' },
+        showDelete: !st2.reference, onDelete: () => this.deleteStory(st2.id),
         openStyle: { background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: isCur ? 'var(--accent)' : 'var(--muted)' } };
     });
 
@@ -1672,7 +2004,7 @@ class Component extends DCLogic {
       const chipColor = cst === 'DECISION' ? 'var(--ink)' : (cst === 'DISCOVERY' ? 'var(--accent)' : (cst === 'QUESTION' ? 'var(--faint)' : 'var(--muted)'));
       const chipBg = cst === 'DECISION' ? 'var(--tint-1)' : (cst === 'DISCOVERY' ? 'var(--accent-tint)' : 'var(--tint-3)');
       return {
-        label, stateLabel: stateLabels2[cst],
+        label, icon: this.fieldIcons[k] || 'ph:circle', stateLabel: stateLabels2[cst],
         chipStyle: { fontSize: '10px', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: chipColor, background: chipBg, padding: '2px 8px', borderRadius: '999px', flex: 'none' },
         text: this.ftext(fd2) || '—',
         textStyle: { fontFamily: "'Caveat','Hanken Grotesk',cursive", fontSize: '20px', fontWeight: cst === 'DECISION' ? 600 : 500, lineHeight: '1.35', letterSpacing: '0', color: cst === 'QUESTION' ? 'var(--muted)' : 'var(--ink)', fontStyle: cst === 'QUESTION' ? 'italic' : 'normal' },
@@ -1693,7 +2025,7 @@ class Component extends DCLogic {
       const chipColor3 = cst3 === 'DECISION' ? 'var(--ink)' : (cst3 === 'DISCOVERY' ? 'var(--accent)' : (cst3 === 'QUESTION' ? 'var(--faint)' : 'var(--muted)'));
       const chipBg3 = cst3 === 'DECISION' ? 'var(--tint-1)' : (cst3 === 'DISCOVERY' ? 'var(--accent-tint)' : 'var(--tint-3)');
       viewCard = {
-        open: true, label: this.labels[vk], stateLabel: stateLabels2[cst3],
+        open: true, label: this.labels[vk], icon: this.fieldIcons[vk] || 'ph:circle', stateLabel: stateLabels2[cst3],
         chipStyle: { fontSize: '10px', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: chipColor3, background: chipBg3, padding: '2px 8px', borderRadius: '999px', flex: 'none' },
         text: this.ftext(fd3) || '—',
         notes: fd3.notes.map(n => ({ tag: noteTag2(n.type), tagStyle: noteTagStyle2(n.type), text: n.text, style: noteStyle2(n.type) })),
@@ -1703,7 +2035,7 @@ class Component extends DCLogic {
 
     // ONBOARDING view-model
     const step = u.onboardStep || 0;
-    const q3 = (key, label, hint, placeholder) => { const fd = s.fields[key]; return { key, label, hint, placeholder, text: this.ftext(fd), onInput: (e) => this.onboardField(key, e) }; };
+    const q3 = (key, label, hint, placeholder) => { const fd = s.fields[key]; return { key, label, hint, placeholder, text: this.ftext(fd), onInput: (e) => this.onboardField(key, e), onDictate: () => this.startDictation('field', key) }; };
     const ob = {
       on: !!u.onboardOpen,
       kicker: step === 0 ? 'Start here · step 1 of 3' : step === 1 ? 'Start here · step 2 of 3' : 'Start here · step 3 of 3',
@@ -1713,6 +2045,7 @@ class Component extends DCLogic {
         : 'The map has 21 elements. You\'ve touched the ones that matter most first. Everything else opens when you\'re ready for it.',
       step0: step === 0, step1: step === 1, step2: step === 2,
       premiseText: this.ftext(s.fields.premise), onPremise: (e) => this.onboardField('premise', e),
+      onDictatePremise: () => this.startDictation('field', 'premise'),
       questions: [
         q3('bestCharacter', 'Who\'s it about?', 'Your protagonist — even a rough sketch is enough.', 'A person who…'),
         q3('conflict', 'What do they want, and what\'s in the way?', 'The clash underneath the plot.', 'They want ___, but ___.'),
@@ -1743,10 +2076,21 @@ class Component extends DCLogic {
       extractSelectValue: exKnown ? exModel : (exModel ? '__custom__' : ''),
       extractIsCustom: !exKnown && !!exModel,
       onExtractSelect: (e) => { const v = e.target.value; this.setUI({ audioSetupExtractModel: v === '__custom__' ? '' : v }); },
+      currencySelectValue: (() => { const cc = (u.audioSetupCurrencyCode !== undefined && u.audioSetupCurrencyCode !== '') ? u.audioSetupCurrencyCode : this.getCurrency().code; return this.CURRENCIES.some(c => c.code === cc) ? cc : '__custom__'; })(),
+      currencyOptions: this.CURRENCIES.map(c => ({ code: c.code, label: c.code + ' — ' + c.name + ' (' + c.symbol + ')' })).concat([{ code: '__custom__', label: 'Custom…' }]),
+      onCurrencySelect: (e) => {
+        const v = e.target.value;
+        if (v === '__custom__') { this.setUI({ audioSetupCurrencyCode: '__custom__' }); return; }
+        const c = this.CURRENCIES.find(x => x.code === v);
+        this.setUI({ audioSetupCurrencyCode: v, audioSetupCurrencySymbol: c.symbol, audioSetupCurrencyRate: String(c.rate) });
+      },
       currencySymbol: u.audioSetupCurrencySymbol !== undefined && u.audioSetupCurrencySymbol !== '' ? u.audioSetupCurrencySymbol : this.getCurrency().symbol,
       onCurrencySymbol: (e) => this.setUI({ audioSetupCurrencySymbol: e.target.value }),
       currencyRate: u.audioSetupCurrencyRate !== undefined && u.audioSetupCurrencyRate !== '' ? u.audioSetupCurrencyRate : String(this.getCurrency().rate),
       onCurrencyRate: (e) => this.setUI({ audioSetupCurrencyRate: e.target.value }),
+      refreshRates: () => this.refreshExchangeRates(),
+      ratesLoading: u.audioSetupRatesStatus === 'loading',
+      ratesLabel: u.audioSetupRatesStatus === 'loading' ? 'Fetching live rates…' : (u.audioSetupRatesStatus === 'error' ? 'Could not fetch live rates — try again later.' : (this._ratesAsOf ? ('Rates as of ' + this._ratesAsOf) : 'Rates: bundled seed values')),
       totalSpentLabel: 'Total spent on voice input so far: ~' + this.formatMoney(this.getTotalSpendUSD()),
       close: () => this.closeAudioSetup(), save: () => this.saveAudioSetup(),
       saveStyle: { background: 'var(--ink)', border: 'none', color: 'var(--bg)', fontSize: '14px', fontWeight: 500, padding: '10px 22px', borderRadius: '2px', cursor: (u.audioSetupKey || '').trim() ? 'pointer' : 'not-allowed', opacity: (u.audioSetupKey || '').trim() ? 1 : 0.5 },
@@ -1760,13 +2104,16 @@ class Component extends DCLogic {
       accept: r.accept, onToggle: () => this.toggleAudioRow(i),
       toggleLabel: r.accept ? 'Will apply' : 'Skipped',
       toggleStyle: { background: 'none', border: '1px solid ' + (r.accept ? 'var(--accent)' : 'var(--border)'), color: r.accept ? 'var(--accent)' : 'var(--muted)', fontSize: '12px', fontWeight: 600, padding: '5px 12px', borderRadius: '2px', cursor: 'pointer', flex: 'none' },
+      cleaning: !!r.cleaning, cleanupLabel: r.cleaning ? 'Cleaning…' : '✨ Clean up',
+      cleanupBtnStyle: { background: 'none', border: '1px solid var(--border-note)', color: 'var(--text)', fontSize: '12px', fontWeight: 500, padding: '5px 12px', borderRadius: '2px', cursor: r.cleaning ? 'default' : 'pointer', opacity: r.cleaning ? 0.6 : 1 },
+      onCleanup: () => this.cleanupRow(i),
     }));
     const applyCount = (au.rows || []).filter(r => r.accept).length;
     const audio = {
       open: au.open, isRecording: au.phase === 'recording', isBusy: au.phase === 'transcribing' || au.phase === 'extracting', isReview: au.phase === 'review', isError: au.phase === 'error',
       busyLabel: au.phase === 'transcribing' ? 'Transcribing…' : (au.phase === 'extracting' ? 'Sorting into fields…' : ''),
       timeLabel: this.fmtSeconds(au.seconds || 0),
-      scopeLabel: au.scope === 'chapter' ? (this.groupLabel(au.group) + ' — dictated chapter') : (au.targetKey ? this.labels[au.targetKey] : ''),
+      scopeLabel: au.scope === 'chapter' ? (this.groupLabel(au.group) + ' — dictated chapter') : (au.scope === 'raw' ? ((au.rawMeta && au.rawMeta.label) || 'Text') : (au.targetKey ? this.labels[au.targetKey] : '')),
       error: au.error || '', transcript: au.transcript || '', hasTranscript: !!(au.transcript || '').trim(),
       rows: audioRows, applyCount, applyLabel: 'Apply ' + applyCount + ' field' + (applyCount === 1 ? '' : 's'),
       costLabel: au.cost ? ('This dictation: ~' + this.formatMoney(au.cost)) : '',
@@ -1796,6 +2143,7 @@ class Component extends DCLogic {
       workTitlePh: collName === 'scenes' ? 'Scene title…' : 'Beat / plot event…',
       collItems, collEmpty: collItems.length === 0,
       newTitle: u.newTitle || '', newText: u.newText || '', setNewTitle: (e) => this.setUI({ newTitle: e.target.value }), setNewText: (e) => this.setUI({ newText: e.target.value }), addToList: () => this.addToList(),
+      onDictateNewText: () => this.startDictation('raw', { label: collName === 'scenes' ? 'New scene' : 'New beat', current: u.newText || '', onApply: (t) => this.setUI({ newText: t }) }),
       focusOn, f, closeFocus: () => this.closeFocus(), stop: (e) => e.stopPropagation(),
       showStories: u.showStories, toggleStories: () => this.toggleStories(), storyList, newStory: () => this.newStory(),
       showExport: u.showExport, openExport: () => this.openExport(), closeExport: () => this.closeExport(), exportText: this.exportTextNow(),

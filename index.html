@@ -276,6 +276,34 @@
               </div>
             </sc-if>
             <div style="margin-top:28px; padding-top:15px; border-top:1px solid var(--border-soft); font-size:12px; font-weight:500; color:var(--faint);">last changed {{ md.updatedWhen }}</div>
+
+            <div style="margin-top:46px; border-top:1px solid var(--border); padding-top:28px;">
+              <div style="font-size:13px; font-weight:500; color:var(--accent); margin-bottom:10px;">Parking Lot</div>
+              <p style="font-size:14px; line-height:1.55; color:var(--muted); max-width:56ch; margin:0 0 18px;">Unstructured fragments about this character — an overheard line, a contradiction, a way they'd actually phrase something. Doesn't have to fit anywhere yet. Save it here and pull it into a draft whenever it's useful.</p>
+
+              <div style="display:flex; gap:12px; align-items:flex-end; margin-bottom:26px;">
+                <textarea value="{{ md.fragmentDraft }}" onInput="{{ md.setFragmentDraft }}" readOnly="{{ md.readOnly }}" placeholder="A fragment — a line, an image, a contradiction…" style="flex:1; background:var(--inset); border:none; border-radius:2px; color:var(--ink); font-size:15px; line-height:1.5; padding:11px 14px; outline:none; resize:none; min-height:44px;"></textarea>
+                <button onClick="{{ md.addFragment }}" style="background:var(--ink); border:none; color:var(--bg); font-size:13px; font-weight:500; padding:11px 18px; border-radius:2px; cursor:pointer; flex:none;" style-hover="background:var(--ink-hover);">Pin</button>
+              </div>
+
+              <sc-if value="{{ md.hasFragments }}" hint-placeholder-val="{{ true }}">
+                <div style="columns:280px 2; column-gap:20px;">
+                  <sc-for list="{{ md.fragments }}" as="fr" hint-placeholder-count="4">
+                    <div style="break-inside:avoid; background:var(--inset); border-radius:2px; padding:14px 16px; margin-bottom:14px;">
+                      <div style="font-size:14px; line-height:1.5; color:var(--ink-2); white-space:pre-wrap; margin-bottom:10px;">{{ fr.text }}</div>
+                      <div style="display:flex; align-items:center; gap:14px;">
+                        <span style="font-size:11px; font-weight:500; color:var(--faint); flex:1;">{{ fr.when }}</span>
+                        <button onClick="{{ fr.onUse }}" style="background:none; border:none; color:var(--accent); cursor:pointer; font-size:12px; font-weight:600; padding:0;" style-hover="opacity:0.7;">→ Use in draft</button>
+                        <button onClick="{{ fr.onRemove }}" style="background:none; border:none; color:var(--faint-4); cursor:pointer; font-size:14px; line-height:1; padding:0;" style-hover="color:var(--accent);">×</button>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ md.noFragments }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:14px; color:var(--faint); padding:6px 0;">Nothing pinned yet. Whenever a line about this character comes to you — in the shower, on a walk, mid-scene — drop it here before it disappears.</div>
+              </sc-if>
+            </div>
           </div>
 
           <aside style="width:260px; flex:none; position:sticky; top:0; background:var(--inset); border-radius:3px; padding:20px 22px;">
@@ -777,7 +805,12 @@ class Component extends DCLogic {
         verboten: 'That his brother\'s death didn\'t just break his heart — it also, secretly, set something in him free.',
         turn: 'He realizes the guilt he\'s been calling love was actually fear of becoming visible.',
         hardLine: 'He says it out loud, to no one, for the first time: "I\'m not going to disappear the way you did."',
-      } } };
+      } },
+      monologueFragments: [
+        { id: this.rid(), text: 'He never raises his voice. That\'s the scary part — he doesn\'t have to.', createdAt: Date.now() - 6 * 86400000 },
+        { id: this.rid(), text: '"I\'m not angry." He says this a lot. He is always angry.', createdAt: Date.now() - 3 * 86400000 },
+        { id: this.rid(), text: 'What if the achievement was never the point — it was just the only language his father knew how to love him in?', createdAt: Date.now() - 86400000 },
+      ] };
   }
   cloneLayouts() { return JSON.parse(JSON.stringify(this.LAYOUT)); }
   freshMonologue() { return { mode: 'deliberation', pivot: { pressure: '', iWant: '', verboten: '', turn: '', hardLine: '' } }; }
@@ -785,7 +818,7 @@ class Component extends DCLogic {
     const f = {};
     this.metaP.concat(this.metaC).forEach(([k]) => { f[k] = this.mk('', 'OPEN'); });
     f['@monologue'] = this.mk('', 'OPEN');
-    return { id: this.rid(), title: title || 'Untitled Work', createdAt: Date.now(), archived: false, fields: f, onboarded: false, layouts: this.cloneLayouts(), relations: [], plot: [], scenes: [], symbols: [], notes: [], monologue: this.freshMonologue() };
+    return { id: this.rid(), title: title || 'Untitled Work', createdAt: Date.now(), archived: false, fields: f, onboarded: false, layouts: this.cloneLayouts(), relations: [], plot: [], scenes: [], symbols: [], notes: [], monologue: this.freshMonologue(), monologueFragments: [] };
   }
 
   // A finished, read-only worked example — for "compare mine to a master."
@@ -833,18 +866,22 @@ class Component extends DCLogic {
         verboten: 'That keeping him safe was always partly about keeping himself from feeling like he lost everything twice.',
         turn: 'He realizes the net he\'s been keeping Nemo in was built from his own fear, not from love.',
         hardLine: '"I\'m letting go of the net. Not because I stopped being afraid — but because he has to find out what he can survive."',
-      } } };
+      } },
+      monologueFragments: [
+        { id: this.rid(), text: 'He counts the reef every morning without knowing he\'s doing it anymore.', createdAt: Date.now() - 5 * 86400000 },
+        { id: this.rid(), text: 'Fear that has been doing a good job for years doesn\'t know how to stop, even once it isn\'t needed.', createdAt: Date.now() - 2 * 86400000 },
+      ] };
   }
 
-  freshUI() { let theme = 'light'; try { theme = localStorage.getItem('storyDojo_theme') || 'light'; } catch (e) {} return { lens: 'story', focusKey: null, panX: 72, panY: 28, scale: 0.76, showExport: false, exportFmt: 'md', showStories: false, noteType: 'note', noteDraft: '', newTitle: '', newText: '', copied: false, relVerb: 'causes', relTarget: '', viewMode: false, theme, onboardOpen: false, onboardStep: 0, toast: null, guidedIndex: 0 }; }
+  freshUI() { let theme = 'light'; try { theme = localStorage.getItem('storyDojo_theme') || 'light'; } catch (e) {} return { lens: 'story', focusKey: null, panX: 72, panY: 28, scale: 0.76, showExport: false, exportFmt: 'md', showStories: false, noteType: 'note', noteDraft: '', newTitle: '', newText: '', copied: false, relVerb: 'causes', relTarget: '', viewMode: false, theme, onboardOpen: false, onboardStep: 0, toast: null, guidedIndex: 0, fragmentDraft: '' }; }
   loadState() {
     let saved = null;
     try { saved = JSON.parse(localStorage.getItem('storyDojo_v2')); } catch (e) {}
     if (saved && saved.stories && saved.stories.length) {
       const stories = saved.stories;
       if (!stories.some(x => x.reference)) stories.push(this.seedReference());
-      // Migrate stories saved before Monologue Studio existed.
-      stories.forEach(st => { if (!st.fields['@monologue']) st.fields['@monologue'] = this.mk('', 'OPEN'); if (!st.monologue) st.monologue = this.freshMonologue(); });
+      // Migrate stories saved before Monologue Studio / the Parking Lot existed.
+      stories.forEach(st => { if (!st.fields['@monologue']) st.fields['@monologue'] = this.mk('', 'OPEN'); if (!st.monologue) st.monologue = this.freshMonologue(); if (!st.monologueFragments) st.monologueFragments = []; });
       return { stories, currentId: saved.currentId || saved.stories[0].id, ui: this.freshUI() };
     }
     const s = this.seedStory();
@@ -952,6 +989,17 @@ class Component extends DCLogic {
   // ---- Monologue Studio ----
   setMonologueMode(mode) { if (this.isRefLocked()) return; this.cur().monologue.mode = mode; this.commit(); }
   setPivot(key, e) { if (this.isRefLocked()) return; this.cur().monologue.pivot[key] = e.target.value; this.commit(); }
+
+  // ---- Parking Lot: unstructured fragments, captured on the fly, referred back to later ----
+  addFragment() { if (this.isRefLocked()) return; const t = (this.state.ui.fragmentDraft || '').trim(); if (!t) return; this.cur().monologueFragments.unshift({ id: this.rid(), text: t, createdAt: Date.now() }); this.setUI({ fragmentDraft: '' }); this.commit(); }
+  removeFragment(id) { if (this.isRefLocked()) return; const s = this.cur(); s.monologueFragments = s.monologueFragments.filter(x => x.id !== id); this.commit(); }
+  useFragmentInDraft(id) {
+    if (this.isRefLocked()) return;
+    const s = this.cur(), frag = s.monologueFragments.find(x => x.id === id);
+    if (!frag) return;
+    const mf = s.fields['@monologue'], cur = mf.versions[mf.current].text || '';
+    this.setFieldText('@monologue', cur ? cur + '\n\n' + frag.text : frag.text);
+  }
   setFieldText(key, text) {
     if (this.isRefLocked()) return;
     const f = this.cur().fields[key];
@@ -1133,10 +1181,10 @@ class Component extends DCLogic {
       const done = gi >= this.GUIDED_ORDER.length;
       gd.done = done; gd.showQuestion = !done; gd.stepLabel = done ? 'Synthesis' : ('Question ' + (gi + 1) + ' of ' + this.GUIDED_ORDER.length);
       const pct = Math.round((Math.min(gi, this.GUIDED_ORDER.length) / this.GUIDED_ORDER.length) * 100);
-      gd.barStyle = { width: pct + '%', height: '2px', background: '#a8762f', borderRadius: '1px', transition: 'width .2s ease' };
+      gd.barStyle = { width: pct + '%', height: '2px', background: 'var(--accent)', borderRadius: '1px', transition: 'width .2s ease' };
       if (!done) {
         const key = this.GUIDED_ORDER[gi], fd = s.fields[key], st = this.stateOf(fd), concept = this.concepts[key] || { def: '', examples: [] };
-        const linkBtn2 = (active) => ({ background: 'none', border: 'none', padding: '2px 0', cursor: 'pointer', fontSize: '13px', fontWeight: active ? 600 : 400, color: active ? '#1a1a18' : '#8a877f', borderBottom: active ? '2px solid #1a1a18' : '2px solid transparent' });
+        const linkBtn2 = (active) => ({ background: 'none', border: 'none', padding: '2px 0', cursor: 'pointer', fontSize: '13px', fontWeight: active ? 600 : 400, color: active ? 'var(--ink)' : 'var(--muted)', borderBottom: active ? '2px solid var(--ink)' : '2px solid transparent' });
         gd.label = this.labels[key]; gd.def = concept.def; gd.examples = concept.examples.map(ex => ({ text: ex }));
         gd.text = this.ftext(fd); gd.onText = (e) => this.guidedField(key, e);
         gd.stateOptions = [['OPEN', 'I don\'t know yet'], ['WORKING', 'Hypothesis'], ['LOCKED', 'Decision']].map(([status, label]) => ({ label, onClick: () => this.setStatus(key, status), style: linkBtn2(fd.status === status) }));
@@ -1159,19 +1207,26 @@ class Component extends DCLogic {
       md.characterLine = this.ftext(s.fields.bestCharacter) || 'Fill in Best Character on the map first — the monologue draws its voice from there.';
       md.modes = this.MONOLOGUE_MODES.map(m => ({ id: m.id, name: m.name, desc: m.desc, shape: m.shape, active: m.id === mono.mode,
         onClick: () => this.setMonologueMode(m.id),
-        style: { textAlign: 'left', cursor: 'pointer', padding: '13px 15px', borderRadius: '2px', border: '1px solid ' + (m.id === mono.mode ? '#a8762f' : '#e4e2db'), background: m.id === mono.mode ? '#f6ecd8' : '#faf9f6' } }));
+        style: { textAlign: 'left', cursor: 'pointer', padding: '13px 15px', borderRadius: '2px', border: '1px solid ' + (m.id === mono.mode ? 'var(--accent)' : 'var(--border)'), background: m.id === mono.mode ? 'var(--accent-bg)' : 'var(--surface)' } }));
       md.curModeDesc = curMode.desc; md.curModeShape = curMode.shape;
       md.pivot = this.PIVOT_FIELDS.map(([key, label, hint]) => ({ key, label, hint, value: mono.pivot[key] || '', onInput: (e) => this.setPivot(key, e) }));
       const st = this.stateOf(mf);
-      const linkBtn3 = (active) => ({ background: 'none', border: 'none', padding: '2px 0', cursor: 'pointer', fontSize: '13px', fontWeight: active ? 600 : 400, color: active ? '#1a1a18' : '#8a877f', borderBottom: active ? '2px solid #1a1a18' : '2px solid transparent' });
+      const linkBtn3 = (active) => ({ background: 'none', border: 'none', padding: '2px 0', cursor: 'pointer', fontSize: '13px', fontWeight: active ? 600 : 400, color: active ? 'var(--ink)' : 'var(--muted)', borderBottom: active ? '2px solid var(--ink)' : '2px solid transparent' });
       md.text = this.ftext(mf); md.onText = (e) => this.setFieldText('@monologue', e.target.value);
       md.stateOptions = [['OPEN', 'Question'], ['WORKING', 'Hypothesis'], ['LOCKED', 'Decision']].map(([status, label]) => ({ label, onClick: () => this.setStatus('@monologue', status), style: linkBtn3(mf.status === status) }));
       md.commitVersion = () => this.commitVersion('@monologue');
       md.hasDrafts = mf.versions.length > 1;
       md.versions = mf.versions.map((v, i) => ({ n: 'V' + (i + 1), currentTag: i === mf.current ? ' · current' : '', when: this.fmt(v.createdAt), text: v.text, onUse: () => this.useVersion('@monologue', i),
-        style: { padding: '12px 14px', marginBottom: '7px', cursor: 'pointer', borderRadius: '2px', background: i === mf.current ? '#f1ede3' : '#efeee9', border: '1px solid ' + (i === mf.current ? '#c9bfa4' : '#e4e2db') } }));
+        style: { padding: '12px 14px', marginBottom: '7px', cursor: 'pointer', borderRadius: '2px', background: i === mf.current ? 'var(--sel)' : 'var(--inset)', border: '1px solid ' + (i === mf.current ? 'var(--sel-border)' : 'var(--border)') } }));
       md.craftRules = this.craftRules.map(t => ({ text: t }));
       md.updatedWhen = this.fmt(mf.updatedAt);
+
+      // Parking Lot: unstructured fragments — quick captures, referred back to later.
+      const frags = s.monologueFragments || [];
+      md.fragmentDraft = u.fragmentDraft || ''; md.setFragmentDraft = (e) => this.setUI({ fragmentDraft: e.target.value }); md.addFragment = () => this.addFragment();
+      md.hasFragments = frags.length > 0; md.noFragments = frags.length === 0;
+      md.fragments = frags.map(fr => ({ text: fr.text, when: this.fmt(fr.createdAt),
+        onUse: () => this.useFragmentInDraft(fr.id), onRemove: () => this.removeFragment(fr.id) }));
     }
 
     // FOCUS

@@ -78,7 +78,7 @@
       <span style="font-size:11px; font-weight:500; color:var(--faint); white-space:nowrap;">{{ storyIndex }}</span>
     </button>
     <div style="width:1px; height:20px; background:var(--border); flex:none;"></div>
-    <nav style="display:flex; align-items:center; gap:18px; flex:1; min-width:0; overflow-x:auto;">
+    <nav style="display:flex; align-items:center; gap:16px; flex:1; min-width:120px; overflow-x:auto; scrollbar-width:thin;">
       <sc-for list="{{ lenses }}" as="l" hint-placeholder-count="12">
         <button onClick="{{ l.onClick }}" style="{{ l.style }}" style-hover="color:var(--ink);"><iconify-icon icon="{{ l.icon }}"></iconify-icon> {{ l.name }}</button>
       </sc-for>
@@ -383,6 +383,52 @@
           <div style="font-size:13px; font-weight:500; color:var(--accent); margin-bottom:10px;">{{ chapterLabel }}</div>
           <h1 style="font-size:24px; font-weight:600; letter-spacing:-0.02em; color:var(--ink); margin:0 0 12px;">{{ chapterTitle }}</h1>
           <p style="font-size:14px; line-height:1.55; color:var(--muted); margin:0;">Notes from this chapter aren't in yet. Once they land, this tab turns into the tool that chapter needs.</p>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- STORY ANATOMY — chapter 1: the story as one system, not a form to fill in -->
+    <sc-if value="{{ isAnatomy }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; overflow-y:auto; background:var(--bg);">
+        <div style="max-width:760px; margin:0 auto; padding:56px 44px 120px;">
+          <div style="font-size:13px; font-weight:500; color:var(--accent); margin-bottom:14px;">Chapter 1 · the skeleton, not another form</div>
+          <h1 style="font-size:32px; font-weight:600; letter-spacing:-0.02em; color:var(--ink); margin:0 0 16px; line-height:1.1;">Story Anatomy</h1>
+          <p style="font-size:16px; line-height:1.6; color:var(--text); max-width:62ch; margin:0 0 40px;">{{ sa.coreInsight }}</p>
+
+          <div style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:14px;">THE BODY — Truby's system-to-organ map</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:40px;">
+            <sc-for list="{{ sa.anatomy }}" as="an" hint-placeholder-count="5">
+              <div style="background:var(--inset); border-radius:2px; padding:13px 16px;">
+                <div style="font-size:14px; font-weight:600; color:var(--ink);">{{ an.part }}</div>
+                <div style="font-size:13px; color:var(--muted);">{{ an.body }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:6px;">STORY MOVEMENT — how a story travels, not a type to pick early</div>
+          <p style="font-size:13px; line-height:1.5; color:var(--faint); margin:0 0 14px;">A story can look linear and reveal itself as spiral later. Read these, don't commit to one yet.</p>
+          <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:40px;">
+            <sc-for list="{{ sa.movements }}" as="mv" hint-placeholder-count="5">
+              <div style="display:flex; gap:16px; align-items:baseline; border-left:2px solid var(--border-note); padding-left:14px;">
+                <div style="font-size:14px; font-weight:600; color:var(--ink); width:110px; flex:none;">{{ mv.name }}</div>
+                <div style="font-size:13px; color:var(--muted); line-height:1.5;">{{ mv.desc }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:14px;">THE ROADMAP — Truby's construction order, one module per chapter studied</div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:40px;">
+            <sc-for list="{{ sa.roadmap }}" as="rm" hint-placeholder-count="11">
+              <div style="font-size:12px; font-weight:500; padding:5px 11px; border-radius:12px; background:var(--inset); color:{{ rm.color }};">{{ rm.name }}</div>
+            </sc-for>
+          </div>
+
+          <div style="border-top:1px solid var(--border); padding-top:22px;">
+            <div style="font-size:13px; font-weight:600; color:var(--ink); margin-bottom:6px;">Software implication</div>
+            <p style="font-size:14px; line-height:1.55; color:var(--text); margin:0 0 18px;">{{ sa.implication }}</p>
+            <div style="font-size:13px; font-weight:600; color:var(--ink); margin-bottom:6px;">Implementation status</div>
+            <p style="font-size:14px; line-height:1.55; color:var(--muted); margin:0;">{{ sa.status }}</p>
+          </div>
         </div>
       </div>
     </sc-if>
@@ -848,10 +894,10 @@ class Component extends DCLogic {
       '@plot': 'ph:map-pin', '@monologue': 'ph:microphone-stage',
     };
     this.lensIcons = {
-      ch1: 'ph:hourglass', story: 'ph:book-open-text', ch3: 'ph:stairs', character: 'ph:user',
-      moral: 'ph:scales', ch6: 'ph:globe-hemisphere-west', ch7: 'ph:tree-structure',
-      plot: 'ph:map-pin', scenes: 'ph:film-strip', ch10: 'ph:chats-circle',
-      ch11: 'ph:infinity', monologue: 'ph:microphone-stage',
+      anatomy: 'ph:tree-structure', story: 'ph:book-open-text', sevenSteps: 'ph:stairs', character: 'ph:user',
+      moral: 'ph:scales', storyWorld: 'ph:globe-hemisphere-west', symbolWeb: 'ph:sparkle',
+      plot: 'ph:map-pin', scenes: 'ph:film-strip', sceneConstruction: 'ph:hammer',
+      dialogue: 'ph:chats-circle', monologue: 'ph:microphone-stage',
     };
     this.stateIcons = { OPEN: 'ph:question', WORKING: 'ph:flask', LOCKED: 'ph:check-circle' };
     this.groupOf = {};
@@ -863,18 +909,20 @@ class Component extends DCLogic {
 
     // Top nav mirrors the book's chapters (Truby, Anatomy of Story) in reading order.
     // Locked chapters are ones not read yet — shown so the roadmap is visible, not clickable.
+    // Top nav mirrors Truby's construction roadmap (his own sequence, chapter 1's takeaway),
+    // named by step rather than chapter number. Locked steps haven't been read yet.
     this.LENSES = [
-      { id: 'ch1', name: 'Story Space, Story Time', kind: 'placeholder', chapter: 1, locked: false },
-      { id: 'story', name: 'Premise', kind: 'map', chapter: 2, locked: false },
-      { id: 'ch3', name: 'Seven Key Steps', kind: 'placeholder', chapter: 3, locked: false },
-      { id: 'character', name: 'Character', kind: 'map', chapter: 4, locked: false },
-      { id: 'moral', name: 'Moral Argument', kind: 'map', chapter: 5, locked: true },
-      { id: 'ch6', name: 'Story World', kind: 'placeholder', chapter: 6, locked: true },
-      { id: 'ch7', name: 'Symbol Web', kind: 'placeholder', chapter: 7, locked: true },
-      { id: 'plot', name: 'Plot', kind: 'work', chapter: 8, locked: true },
-      { id: 'scenes', name: 'Scene Weave', kind: 'work', chapter: 9, locked: true },
-      { id: 'ch10', name: 'Scene Construction', kind: 'placeholder', chapter: 10, locked: true },
-      { id: 'ch11', name: 'The Never-Ending Story', kind: 'placeholder', chapter: 11, locked: true },
+      { id: 'anatomy', name: 'Story Anatomy', kind: 'anatomy', step: 0, locked: false },
+      { id: 'story', name: 'Premise', kind: 'map', step: 1, locked: false },
+      { id: 'sevenSteps', name: 'Seven Key Steps', kind: 'placeholder', step: 2, locked: false },
+      { id: 'character', name: 'Character', kind: 'map', step: 3, locked: false },
+      { id: 'moral', name: 'Moral Argument', kind: 'map', step: 4, locked: true },
+      { id: 'storyWorld', name: 'Story World', kind: 'placeholder', step: 5, locked: true },
+      { id: 'symbolWeb', name: 'Symbol Web', kind: 'placeholder', step: 6, locked: true },
+      { id: 'plot', name: 'Plot', kind: 'work', step: 7, locked: true },
+      { id: 'scenes', name: 'Scene Weave', kind: 'work', step: 8, locked: true },
+      { id: 'sceneConstruction', name: 'Scene Construction', kind: 'placeholder', step: 9, locked: true },
+      { id: 'dialogue', name: 'Symphonic Dialogue', kind: 'placeholder', step: 10, locked: true },
       { id: 'monologue', name: 'Monologue', kind: 'monologue' },
     ];
     // Linear path through the essentials for a first pass — same fields as the map, one at a time.
@@ -1806,10 +1854,33 @@ class Component extends DCLogic {
   renderVals() {
     const R = React, u = this.state.ui, s = this.cur(), lens = this.curLens();
     const isView = !!u.viewMode;
-    const lensId = lens.id, isMap = !isView && lens.kind === 'map', isWork = !isView && lens.kind === 'work', isMemory = !isView && lens.kind === 'memory', isGuided = !isView && lens.kind === 'guided', isMonologue = !isView && lens.kind === 'monologue', isPlaceholder = !isView && lens.kind === 'placeholder';
+    const lensId = lens.id, isMap = !isView && lens.kind === 'map', isWork = !isView && lens.kind === 'work', isMemory = !isView && lens.kind === 'memory', isGuided = !isView && lens.kind === 'guided', isMonologue = !isView && lens.kind === 'monologue', isPlaceholder = !isView && lens.kind === 'placeholder', isAnatomy = !isView && lens.kind === 'anatomy';
+
+    // Story Anatomy (chapter 1 takeaway) — reference content, not a form: the story is one
+    // interconnected system, not independent fields. See Chapter 1 notes for the source.
+    const sa = !isAnatomy ? null : {
+      coreInsight: 'A story is an interconnected living system, not a collection of independent parts. No element — including the hero — works except in relation to the others.',
+      anatomy: [
+        { part: 'Moral Argument', body: 'Brain' },
+        { part: 'Character', body: 'Heart / Circulation' },
+        { part: 'Revelations', body: 'Nervous System' },
+        { part: 'Structure', body: 'Skeleton' },
+        { part: 'Scenes', body: 'Skin' },
+      ],
+      movements: [
+        { name: 'Linear', desc: 'A → B → C → D' },
+        { name: 'Meandering', desc: 'A → wandering encounters → B → wandering encounters → C' },
+        { name: 'Spiral', desc: 'Return to the same event or question, but each return goes deeper.' },
+        { name: 'Branching', desc: 'One central situation → multiple narrative paths.' },
+        { name: 'Explosive', desc: 'One central point → many things happening simultaneously.' },
+      ],
+      roadmap: this.LENSES.filter(l => l.kind !== 'anatomy' && l.kind !== 'monologue').map(l => ({ name: l.name, color: l.locked ? 'var(--faint)' : 'var(--ink)' })),
+      implication: 'Build relationships between these systems, not isolated fields.',
+      status: 'Architecture only — downstream modules get built as their chapters are actually studied, not before.',
+    };
 
     const lenses = isView ? [] : this.LENSES.map(l => ({
-      name: (l.chapter ? l.chapter + '. ' : '') + l.name, icon: l.locked ? 'ph:lock-simple' : (this.lensIcons[l.id] || 'ph:circle'),
+      name: l.name, icon: l.locked ? 'ph:lock-simple' : (this.lensIcons[l.id] || 'ph:circle'),
       onClick: l.locked ? () => {} : () => this.setLens(l.id),
       style: { background: 'none', border: 'none', cursor: l.locked ? 'default' : 'pointer', padding: '3px 0 5px', fontSize: '14px', fontWeight: u.lens === l.id ? 600 : 400, letterSpacing: '-0.005em', whiteSpace: 'nowrap', color: l.locked ? 'var(--faint)' : (u.lens === l.id ? 'var(--ink)' : 'var(--muted)'), opacity: l.locked ? 0.55 : 1, borderBottom: u.lens === l.id ? '1px solid var(--ink)' : '1px solid transparent', marginBottom: '-1px' } }));
 
@@ -2142,8 +2213,8 @@ class Component extends DCLogic {
 
     return {
       storyTitle: s.title, storyIndex: 'Work ' + String(idxNum).padStart(2, '0'),
-      lenses, isMap, isWork, isMemory, isGuided, gd, isMonologue, md, isPlaceholder,
-      chapterLabel: lens.chapter ? 'Chapter ' + lens.chapter : '', chapterTitle: lens.name,
+      lenses, isMap, isWork, isMemory, isGuided, gd, isMonologue, md, isPlaceholder, isAnatomy, sa,
+      chapterLabel: 'Not built yet', chapterTitle: lens.name,
       isRefStory: !!s.reference,
       isView, deckSections, viewCard,
       onModeToggle: () => (isView ? this.exitView() : this.enterView()),

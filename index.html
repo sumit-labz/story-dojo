@@ -78,8 +78,8 @@
       <span style="font-size:11px; font-weight:500; color:var(--faint); white-space:nowrap;">{{ storyIndex }}</span>
     </button>
     <div style="width:1px; height:20px; background:var(--border); flex:none;"></div>
-    <nav style="display:flex; align-items:center; gap:22px; flex:1; min-width:0; overflow:hidden;">
-      <sc-for list="{{ lenses }}" as="l" hint-placeholder-count="7">
+    <nav style="display:flex; align-items:center; gap:18px; flex:1; min-width:0; overflow-x:auto;">
+      <sc-for list="{{ lenses }}" as="l" hint-placeholder-count="12">
         <button onClick="{{ l.onClick }}" style="{{ l.style }}" style-hover="color:var(--ink);"><iconify-icon icon="{{ l.icon }}"></iconify-icon> {{ l.name }}</button>
       </sc-for>
       <sc-if value="{{ isView }}" hint-placeholder-val="{{ false }}">
@@ -372,6 +372,17 @@
               <div style="font-size:13px; line-height:1.5; color:var(--text); margin-bottom:11px; padding-left:12px; border-left:2px solid var(--border-note);">{{ cr.text }}</div>
             </sc-for>
           </aside>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- CHAPTER PLACEHOLDER — read, not yet built out -->
+    <sc-if value="{{ isPlaceholder }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:var(--bg);">
+        <div style="max-width:440px; text-align:center;">
+          <div style="font-size:13px; font-weight:500; color:var(--accent); margin-bottom:10px;">{{ chapterLabel }}</div>
+          <h1 style="font-size:24px; font-weight:600; letter-spacing:-0.02em; color:var(--ink); margin:0 0 12px;">{{ chapterTitle }}</h1>
+          <p style="font-size:14px; line-height:1.55; color:var(--muted); margin:0;">Notes from this chapter aren't in yet. Once they land, this tab turns into the tool that chapter needs.</p>
         </div>
       </div>
     </sc-if>
@@ -837,9 +848,10 @@ class Component extends DCLogic {
       '@plot': 'ph:map-pin', '@monologue': 'ph:microphone-stage',
     };
     this.lensIcons = {
-      guided: 'ph:compass-rose', story: 'ph:book-open', character: 'ph:user',
-      moral: 'ph:scales', causal: 'ph:flow-arrow', plot: 'ph:map-pin',
-      scenes: 'ph:film-strip', monologue: 'ph:microphone-stage', memory: 'ph:clock-counter-clockwise',
+      ch1: 'ph:hourglass', story: 'ph:book-open-text', ch3: 'ph:stairs', character: 'ph:user',
+      moral: 'ph:scales', ch6: 'ph:globe-hemisphere-west', ch7: 'ph:tree-structure',
+      plot: 'ph:map-pin', scenes: 'ph:film-strip', ch10: 'ph:chats-circle',
+      ch11: 'ph:infinity', monologue: 'ph:microphone-stage',
     };
     this.stateIcons = { OPEN: 'ph:question', WORKING: 'ph:flask', LOCKED: 'ph:check-circle' };
     this.groupOf = {};
@@ -849,16 +861,21 @@ class Component extends DCLogic {
     this.verbs = ['causes','contradicts','requires','produces','forces','expresses','transforms','culminates in','obstructs','attracts','shapes'];
     this.causalVerbs = ['causes','produces','transforms','forces','culminates in','shapes'];
 
+    // Top nav mirrors the book's chapters (Truby, Anatomy of Story) in reading order.
+    // Locked chapters are ones not read yet — shown so the roadmap is visible, not clickable.
     this.LENSES = [
-      { id: 'guided', name: 'Guided', kind: 'guided' },
-      { id: 'story', name: 'Story', kind: 'map' },
-      { id: 'character', name: 'Character', kind: 'map' },
-      { id: 'moral', name: 'Moral', kind: 'map' },
-      { id: 'causal', name: 'Causal', kind: 'map' },
-      { id: 'plot', name: 'Plot', kind: 'work' },
-      { id: 'scenes', name: 'Scenes', kind: 'work' },
+      { id: 'ch1', name: 'Story Space, Story Time', kind: 'placeholder', chapter: 1, locked: false },
+      { id: 'story', name: 'Premise', kind: 'map', chapter: 2, locked: false },
+      { id: 'ch3', name: 'Seven Key Steps', kind: 'placeholder', chapter: 3, locked: false },
+      { id: 'character', name: 'Character', kind: 'map', chapter: 4, locked: false },
+      { id: 'moral', name: 'Moral Argument', kind: 'map', chapter: 5, locked: true },
+      { id: 'ch6', name: 'Story World', kind: 'placeholder', chapter: 6, locked: true },
+      { id: 'ch7', name: 'Symbol Web', kind: 'placeholder', chapter: 7, locked: true },
+      { id: 'plot', name: 'Plot', kind: 'work', chapter: 8, locked: true },
+      { id: 'scenes', name: 'Scene Weave', kind: 'work', chapter: 9, locked: true },
+      { id: 'ch10', name: 'Scene Construction', kind: 'placeholder', chapter: 10, locked: true },
+      { id: 'ch11', name: 'The Never-Ending Story', kind: 'placeholder', chapter: 11, locked: true },
       { id: 'monologue', name: 'Monologue', kind: 'monologue' },
-      { id: 'memory', name: 'Memory', kind: 'memory' },
     ];
     // Linear path through the essentials for a first pass — same fields as the map, one at a time.
     this.GUIDED_ORDER = ['premise', 'bestCharacter', 'char.desire', 'conflict', 'char.opponent', 'basicAction', 'characterChange', 'moralChoice'];
@@ -1789,10 +1806,12 @@ class Component extends DCLogic {
   renderVals() {
     const R = React, u = this.state.ui, s = this.cur(), lens = this.curLens();
     const isView = !!u.viewMode;
-    const lensId = lens.id, isMap = !isView && lens.kind === 'map', isWork = !isView && lens.kind === 'work', isMemory = !isView && lens.kind === 'memory', isGuided = !isView && lens.kind === 'guided', isMonologue = !isView && lens.kind === 'monologue';
+    const lensId = lens.id, isMap = !isView && lens.kind === 'map', isWork = !isView && lens.kind === 'work', isMemory = !isView && lens.kind === 'memory', isGuided = !isView && lens.kind === 'guided', isMonologue = !isView && lens.kind === 'monologue', isPlaceholder = !isView && lens.kind === 'placeholder';
 
-    const lenses = isView ? [] : this.LENSES.map(l => ({ name: l.name, icon: this.lensIcons[l.id] || 'ph:circle', onClick: () => this.setLens(l.id),
-      style: { background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0 5px', fontSize: '14px', fontWeight: u.lens === l.id ? 600 : 400, letterSpacing: '-0.005em', color: u.lens === l.id ? 'var(--ink)' : 'var(--muted)', borderBottom: u.lens === l.id ? '1px solid var(--ink)' : '1px solid transparent', marginBottom: '-1px' } }));
+    const lenses = isView ? [] : this.LENSES.map(l => ({
+      name: (l.chapter ? l.chapter + '. ' : '') + l.name, icon: l.locked ? 'ph:lock-simple' : (this.lensIcons[l.id] || 'ph:circle'),
+      onClick: l.locked ? () => {} : () => this.setLens(l.id),
+      style: { background: 'none', border: 'none', cursor: l.locked ? 'default' : 'pointer', padding: '3px 0 5px', fontSize: '14px', fontWeight: u.lens === l.id ? 600 : 400, letterSpacing: '-0.005em', whiteSpace: 'nowrap', color: l.locked ? 'var(--faint)' : (u.lens === l.id ? 'var(--ink)' : 'var(--muted)'), opacity: l.locked ? 0.55 : 1, borderBottom: u.lens === l.id ? '1px solid var(--ink)' : '1px solid transparent', marginBottom: '-1px' } }));
 
     // MAP
     const essentialDone = this.essentialCount(), essentialTotal = this.ESSENTIAL.length, spineComplete = essentialDone >= essentialTotal;
@@ -2123,7 +2142,9 @@ class Component extends DCLogic {
 
     return {
       storyTitle: s.title, storyIndex: 'Work ' + String(idxNum).padStart(2, '0'),
-      lenses, isMap, isWork, isMemory, isGuided, gd, isMonologue, md, isRefStory: !!s.reference,
+      lenses, isMap, isWork, isMemory, isGuided, gd, isMonologue, md, isPlaceholder,
+      chapterLabel: lens.chapter ? 'Chapter ' + lens.chapter : '', chapterTitle: lens.name,
+      isRefStory: !!s.reference,
       isView, deckSections, viewCard,
       onModeToggle: () => (isView ? this.exitView() : this.enterView()),
       modeToggleLabel: isView ? '‹ Edit' : 'View ▸',

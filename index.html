@@ -5,9 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Story Dojo</title>
 <meta name="description" content="A thinking tool for building story structure — premise, character, and plot, seen through shifting lenses.">
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
+<div id="sd-gate" style="display:none; position:fixed; inset:0; z-index:9999; background:#F4F4F1; align-items:center; justify-content:center; font-family:'Hanken Grotesk',system-ui,sans-serif;">
+  <form id="sd-gate-form" style="display:flex; flex-direction:column; gap:14px; width:260px;">
+    <div style="font-size:20px; font-weight:600; color:#1a1a18; letter-spacing:-0.01em;">Story Dojo</div>
+    <input id="sd-gate-pw" type="password" placeholder="Password" autocomplete="off" style="padding:10px 12px; border:1px solid #d8d5cc; border-radius:4px; font-size:15px; outline:none; background:#fff; color:#1a1a18;" />
+    <button type="submit" style="padding:10px 12px; border:none; background:#1a1a18; color:#faf9f6; border-radius:4px; font-size:14px; font-weight:500; cursor:pointer;">Enter</button>
+    <div id="sd-gate-err" style="display:none; font-size:13px; color:#a8762f;">Wrong password — try again.</div>
+  </form>
+</div>
+<div id="sd-app" style="display:none">
 <x-dc>
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,18 +77,26 @@
     .sd-card { break-inside: avoid; page-break-inside: avoid; position: relative; border: 1.5px dashed #999 !important; background: #fff !important; margin: 10px !important; padding: 16px 17px 17px !important; }
     .sd-card::before { content: "✂"; position: absolute; top: -11px; left: 10px; background: #fff; padding: 0 5px; font-size: 13px; color: #666; line-height: 1; }
   }
+  @media (max-width: 640px) {
+    .sd-header { flex-wrap: wrap; row-gap: 6px; column-gap: 8px; padding: 10px 14px !important; gap: 8px !important; }
+    .sd-header .sd-title-idx, .sd-header .sd-divider { display: none; }
+    .sd-header .sd-title-btn span:first-child { font-size: 16px !important; }
+    .sd-header .sd-nav { flex: 1 1 100% !important; order: 5; overflow-x: auto !important; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; }
+    .sd-header .sd-nav::-webkit-scrollbar { display: none; height: 0; }
+    .sd-header .sd-nav > * { flex: none; }
+  }
 </style>
 </helmet>
 <div class="sd-app" style="position:fixed; inset:0; background:var(--bg); color:var(--ink); overflow:hidden; display:flex; flex-direction:column;">
 
   <!-- MASTHEAD -->
-  <header style="position:relative; z-index:6; display:flex; align-items:center; gap:30px; padding:15px 32px; flex:none; border-bottom:1px solid var(--border); background:var(--bg);">
-    <button onClick="{{ toggleStories }}" style="background:none; border:none; padding:0; cursor:pointer; text-align:left; display:flex; align-items:baseline; gap:11px; flex:none;" style-hover="opacity:0.62;">
+  <header class="sd-header" style="position:relative; z-index:6; display:flex; align-items:center; gap:30px; padding:15px 32px; flex:none; border-bottom:1px solid var(--border); background:var(--bg);">
+    <button class="sd-title-btn" onClick="{{ toggleStories }}" style="background:none; border:none; padding:0; cursor:pointer; text-align:left; display:flex; align-items:baseline; gap:11px; flex:none;" style-hover="opacity:0.62;">
       <span style="font-size:19px; font-weight:600; letter-spacing:-0.01em; color:var(--ink); white-space:nowrap;">{{ storyTitle }}</span>
-      <span style="font-size:11px; font-weight:500; color:var(--faint); white-space:nowrap;">{{ storyIndex }}</span>
+      <span class="sd-title-idx" style="font-size:11px; font-weight:500; color:var(--faint); white-space:nowrap;">{{ storyIndex }}</span>
     </button>
-    <div style="width:1px; height:20px; background:var(--border); flex:none;"></div>
-    <nav style="display:flex; align-items:center; gap:22px; flex:1; min-width:0; overflow:hidden;">
+    <div class="sd-divider" style="width:1px; height:20px; background:var(--border); flex:none;"></div>
+    <nav class="sd-nav" style="display:flex; align-items:center; gap:22px; flex:1; min-width:0; overflow:hidden;">
       <sc-for list="{{ lenses }}" as="l" hint-placeholder-count="7">
         <button onClick="{{ l.onClick }}" style="{{ l.style }}" style-hover="color:var(--ink);"><iconify-icon icon="{{ l.icon }}"></iconify-icon> {{ l.name }}</button>
       </sc-for>
@@ -176,6 +194,63 @@
               </div>
             </sc-for>
           </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- EVENTS -->
+    <sc-if value="{{ isEvents }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; overflow-y:auto; background:var(--bg);">
+        <div style="max-width:940px; margin:0 auto; padding:56px 44px 120px;">
+          <div style="font-size:13px; font-weight:500; color:var(--accent); margin-bottom:14px;">Event Bank</div>
+          <h1 style="font-size:34px; font-weight:600; letter-spacing:-0.02em; color:var(--ink); margin:0 0 12px; line-height:1.05;">Raw material</h1>
+          <p style="font-size:17px; line-height:1.55; color:var(--text); max-width:60ch; margin:0 0 40px;">Everything you've written down before it has a structure. Collect first — sort later. Optionally tag what kind of thing it is, and what it feeds.</p>
+
+          <div style="border-top:1px solid var(--ink); border-bottom:1px solid var(--border); padding:18px 0; margin-bottom:36px;">
+            <div style="display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
+              <input value="{{ evSection }}" onInput="{{ setEvSection }}" placeholder="Section (optional) — e.g. Healing / self-discovery" style="flex:1; min-width:220px; background:var(--inset); border:1px solid var(--border); color:var(--ink); font-size:13px; padding:7px 10px; border-radius:2px; outline:none;" />
+              <select value="{{ evType }}" onChange="{{ setEvType }}" style="background:var(--inset); border:1px solid var(--border); color:var(--ink); font-size:13px; padding:7px 9px; border-radius:2px; cursor:pointer;">
+                <sc-for list="{{ evTypeOptions }}" as="eto" hint-placeholder-count="5">
+                  <option value="{{ eto.value }}">{{ eto.label }}</option>
+                </sc-for>
+              </select>
+              <select value="{{ evLink }}" onChange="{{ setEvLink }}" style="background:var(--inset); border:1px solid var(--border); color:var(--ink); font-size:13px; padding:7px 9px; border-radius:2px; cursor:pointer; min-width:170px;">
+                <option value="">no link</option>
+                <sc-for list="{{ evLinkOptions }}" as="elo" hint-placeholder-count="8">
+                  <option value="{{ elo.key }}">{{ elo.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div style="display:flex; gap:20px; align-items:flex-end;">
+              <textarea value="{{ evText }}" onInput="{{ setEvText }}" placeholder="What happens, or what you realize…" style="flex:1; background:none; border:none; border-bottom:1px solid var(--border); color:var(--ink); font-size:15px; line-height:1.55; padding:6px 0; outline:none; resize:none; min-height:42px;"></textarea>
+              <button onClick="{{ addEvent }}" style="align-self:center; background:var(--ink); border:none; color:var(--bg); font-size:14px; font-weight:500; padding:9px 20px; border-radius:2px; cursor:pointer; flex:none;" style-hover="background:var(--ink-hover);">Add</button>
+            </div>
+          </div>
+
+          <sc-if value="{{ eventsEmpty }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:16px; line-height:1.5; color:var(--faint); padding:6px 0;">No events collected yet. Write them down as they come — don't force structure on them.</div>
+          </sc-if>
+
+          <sc-for list="{{ eventSections }}" as="es" hint-placeholder-count="1">
+            <div style="margin-bottom:30px;">
+              <sc-if value="{{ es.hasTitle }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--border);">{{ es.title }}</div>
+              </sc-if>
+              <sc-for list="{{ es.items }}" as="ev" hint-placeholder-count="3">
+                <div style="display:flex; gap:14px; padding:12px 0; border-bottom:1px solid var(--border-soft); align-items:flex-start;">
+                  <span style="font-size:11px; font-weight:600; color:var(--faint); flex:none; width:24px; padding-top:3px;">{{ ev.n }}</span>
+                  <div style="flex:1; min-width:0;">
+                    <textarea value="{{ ev.text }}" onInput="{{ ev.onText }}" style="width:100%; background:none; border:none; color:var(--ink); font-size:15px; line-height:1.55; padding:0; outline:none; resize:none; min-height:24px;"></textarea>
+                    <sc-if value="{{ ev.hasLink }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:12px; font-weight:500; color:var(--accent); margin-top:5px;">↳ feeds {{ ev.linkLabel }}</div>
+                    </sc-if>
+                  </div>
+                  <span style="{{ ev.typeStyle }}">{{ ev.typeLabel }}</span>
+                  <button onClick="{{ ev.onRemove }}" style="background:none; border:none; color:var(--faint-4); cursor:pointer; font-size:16px; line-height:1; flex:none;" style-hover="color:var(--accent);">×</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
         </div>
       </div>
     </sc-if>
@@ -621,11 +696,34 @@
   <sc-if value="{{ showStories }}" hint-placeholder-val="{{ false }}">
     <div onClick="{{ toggleStories }}" style="position:absolute; inset:0; z-index:30; background:var(--scrim); animation:sd-dim .14s ease;"></div>
     <aside style="position:absolute; top:0; left:0; bottom:0; z-index:31; width:396px; max-width:90vw; background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; animation:sd-slide .2s cubic-bezier(.2,.8,.2,1);">
-      <div style="padding:26px 28px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border);">
-        <div style="font-size:13px; font-weight:600; color:var(--muted);">Works</div>
-        <button onClick="{{ newStory }}" style="background:none; border:none; color:var(--ink); cursor:pointer; font-size:13px; font-weight:600;" style-hover="opacity:0.6;">＋ New</button>
-      </div>
-      <div style="flex:1; overflow-y:auto; padding:8px 0 40px;">
+      <div style="flex:1; overflow-y:auto; padding:0 0 40px;">
+        <button onClick="{{ toggleLibrary }}" style="width:100%; background:none; border:none; cursor:pointer; text-align:left; padding:20px 28px 12px; display:flex; justify-content:space-between; align-items:baseline;" style-hover="opacity:0.75;">
+          <span>
+            <span style="font-size:13px; font-weight:600; color:var(--muted);">Library</span>
+            <span style="font-size:12px; font-weight:500; color:var(--faint); margin-left:8px;">{{ libraryCountLabel }}</span>
+          </span>
+          <span style="font-size:12px; font-weight:600; color:var(--faint);">{{ libraryToggleLabel }}</span>
+        </button>
+        <sc-if value="{{ libraryOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:12px; color:var(--faint); margin:-6px 28px 12px; line-height:1.4;">Open one to drop a copy into your Works. Hover a poster.</div>
+          <div style="padding:2px 0 14px; border-bottom:1px solid var(--border);">
+            <sc-for list="{{ libraryList }}" as="lb" hint-placeholder-count="4">
+              <div onClick="{{ lb.onOpen }}" style="display:flex; gap:14px; align-items:flex-start; padding:10px 28px;" style-hover="background:var(--sel);">
+                <div id="{{ lb.posterId }}" onMouseEnter="{{ lb.onEnter }}" onMouseLeave="{{ lb.onLeave }}" style="position:relative; flex:none; width:84px; height:116px; overflow:hidden; border-radius:1px;">
+                  {{ lb.poster }}
+                </div>
+                <div style="flex:1; min-width:0; padding-top:2px;">
+                  <div style="font-size:15px; font-weight:600; color:var(--ink);">{{ lb.title }}</div>
+                  <div style="font-size:12.5px; color:var(--faint); margin-top:5px; line-height:1.4;">{{ lb.blurb }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <div style="padding:20px 28px 16px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:13px; font-weight:600; color:var(--muted);">Works</div>
+          <button onClick="{{ newStory }}" style="background:none; border:none; color:var(--ink); cursor:pointer; font-size:13px; font-weight:600;" style-hover="opacity:0.6;">＋ New</button>
+        </div>
         <sc-for list="{{ storyList }}" as="s" hint-placeholder-count="1">
           <div style="{{ s.style }}">
             <div style="display:flex; align-items:baseline; gap:11px;">
@@ -806,6 +904,7 @@
 
 </div>
 </x-dc>
+</div>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
   constructor(props) {
@@ -858,8 +957,10 @@ class Component extends DCLogic {
       { id: 'plot', name: 'Plot', kind: 'work' },
       { id: 'scenes', name: 'Scenes', kind: 'work' },
       { id: 'monologue', name: 'Monologue', kind: 'monologue' },
+      { id: 'events', name: 'Events', kind: 'events' },
       { id: 'memory', name: 'Memory', kind: 'memory' },
     ];
+    this.EVENT_TYPES = [['event','Event'],['realization','Realization'],['theme','Theme'],['backstory','Backstory'],['question','Question']];
     // Linear path through the essentials for a first pass — same fields as the map, one at a time.
     this.GUIDED_ORDER = ['premise', 'bestCharacter', 'char.desire', 'conflict', 'char.opponent', 'basicAction', 'characterChange', 'moralChoice'];
 
@@ -1056,7 +1157,190 @@ class Component extends DCLogic {
       'char.selfRevelation': 'What does he realize about himself?',
       'char.newEquilibrium': 'Where does he land when it is over?',
     };
+    this.LIBRARY = this.buildLibrary();
     this.state = this.loadState();
+  }
+
+  buildLibrary() {
+    const F = (t, st) => this.mk(t, st);
+    const entry = (title, accent, blurb, f) => ({ id: 'lib-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-'), title, accent, blurb,
+      builtin: true, createdAt: Date.now(), archived: false, fields: f, layouts: this.cloneLayouts(), relations: [], plot: [], scenes: [], events: [], symbols: [], notes: [] });
+
+    const godfather = entry('The Godfather', '#8a2e30', 'Loyalty curdles into inheritance.', {
+      premise: F('A son who wanted no part of the family business becomes the very thing he tried to escape.', 'LOCKED'),
+      designingPrinciple: F("Corruption as inheritance — the family that protects you is the family that consumes you.", 'LOCKED'),
+      bestCharacter: F('Michael Corleone — a decorated outsider whose competence and love for his father pull him back inside.', 'LOCKED'),
+      conflict: F('Loyalty to the family vs. the separate self he was building outside it.', 'LOCKED'),
+      basicAction: F('He solves problems the family way — first with control, then with violence.', 'STRONG'),
+      characterChange: F('An outsider becomes the Don — decisive, isolated, unrecognizable to himself.', 'LOCKED'),
+      moralChoice: F("Avenge his father through the family's code, or stay outside it and let the family fall.", 'LOCKED'),
+      audienceAppeal: F('The seduction of belonging to something powerful, and the price paid in the self.', 'STRONG'),
+      wishList: F('Power, protection, the myth of the self-made family, the cost of loyalty.', 'WORKING'),
+      possibilities: F('Every path back to the legitimate world closes, one scene at a time.', 'WORKING'),
+      challenges: F("Rival families, a corrupt system, the expectations of the father he is replacing.", 'WORKING'),
+      moralArgument: F('Power protects the family and destroys the man who wields it.', 'LOCKED'),
+      storyWorld: F('A closed, ritualized world where business and family speak the same language.', 'STRONG'),
+      'char.weakness': F('Believes he is not like them.', 'STRONG'),
+      'char.need': F('To accept who he actually is, not who he intended to be.', 'WORKING'),
+      'char.desire': F('To protect his father and the family.', 'LOCKED'),
+      'char.opponent': F('Rival dons — and the family code itself.', 'STRONG'),
+      'char.plan': F('Take control quietly, then decisively.', 'STRONG'),
+      'char.battle': F('The baptism, intercut with the assassinations it authorizes.', 'LOCKED'),
+      'char.selfRevelation': F('He has none — the tragedy is that he never sees what he has become.', 'LOCKED'),
+      'char.newEquilibrium': F('Don Corleone. The door closes on Kay.', 'LOCKED'),
+    });
+
+    const tootsie = entry('Tootsie', '#b9852c', 'He becomes a better man by disguising himself as a woman.', {
+      premise: F('An unemployed, difficult actor becomes a better man by pretending to be a woman to get work.', 'LOCKED'),
+      designingPrinciple: F('Deception as self-education — he learns to be a good man only by living as a woman.', 'LOCKED'),
+      bestCharacter: F('Michael Dorsey — talented, uncompromising, unemployable because of his own ego.', 'LOCKED'),
+      conflict: F('His need to work vs. an industry that has rejected who he actually is.', 'STRONG'),
+      basicAction: F('He performs — first for money, then discovers what performing as a woman teaches him about how he treats women.', 'STRONG'),
+      characterChange: F('A man who used women becomes a man capable of real intimacy and honesty.', 'LOCKED'),
+      moralChoice: F('Keep the lie that is finally working, or tell the truth and lose everything "Dorothy" built.', 'LOCKED'),
+      audienceAppeal: F('A farce that becomes a real reckoning — being seen as a woman changes what he understands about being a man.', 'STRONG'),
+      wishList: F('Identity, performance vs. authenticity, gender and power, desperation turned into empathy.', 'WORKING'),
+      possibilities: F('Could stay a costume comedy; the choice is to let the disguise genuinely change him.', 'WORKING'),
+      challenges: F('The lie compounds; the people he loves are lied to; the industry that rejected him now employs "her."', 'WORKING'),
+      moralArgument: F('You cannot become a better man without understanding what it costs to be a woman.', 'LOCKED'),
+      storyWorld: F('New York theatre and soap-opera television — an industry built on surfaces and casting.', 'STRONG'),
+      'char.weakness': F('Arrogant, will not compromise, cannot really see other people.', 'STRONG'),
+      'char.need': F('To listen, to be honest, to see women as people rather than roles.', 'WORKING'),
+      'char.desire': F('To work as an actor, on his own terms.', 'LOCKED'),
+      'char.opponent': F("The industry's gatekeepers — and eventually his own deception.", 'STRONG'),
+      'char.plan': F('Become "Dorothy Michaels" to get cast.', 'STRONG'),
+      'char.battle': F('Unmasking Dorothy live, on the air, in front of everyone.', 'LOCKED'),
+      'char.selfRevelation': F('He was a better man as a woman than he had ever been as himself.', 'LOCKED'),
+      'char.newEquilibrium': F('He apologizes for real, and starts a relationship built on honesty instead of performance.', 'LOCKED'),
+    });
+
+    const shawshank = entry('The Shawshank Redemption', '#345169', 'A private hope survives what an institution built to crush it.', {
+      premise: F('An innocent man survives decades in prison by protecting a private hope no one can take from him.', 'LOCKED'),
+      designingPrinciple: F('Hope as quiet rebellion — patience and integrity outlast the institution built to crush them.', 'LOCKED'),
+      bestCharacter: F('Andy Dufresne — controlled, precise, unbreakable in a way that first reads as coldness.', 'LOCKED'),
+      conflict: F('Institutional despair vs. Andy\'s refusal to surrender an inner life.', 'LOCKED'),
+      basicAction: F('He keeps choosing small, patient acts of dignity, and a long game no one else can see.', 'STRONG'),
+      characterChange: F('Told through Red — a man who has stopped believing in hope learns, by watching Andy, that hope is survivable.', 'LOCKED'),
+      moralChoice: F('Give in to institutionalization and safety, or risk everything on a hope with no guarantee.', 'LOCKED'),
+      audienceAppeal: F('The vindication of quiet integrity against a system built on cruelty and corruption.', 'STRONG'),
+      wishList: F('Unjust punishment, institutional corruption, patience as heroism, friendship as survival.', 'WORKING'),
+      possibilities: F('The escape could be sudden; instead it is earned across two decades of unseen labor.', 'WORKING'),
+      challenges: F('Corrupt guards and warden, brutal fellow inmates, the slow erosion of hope itself.', 'WORKING'),
+      moralArgument: F('Hope, patiently kept, outlasts any wall built to contain it.', 'LOCKED'),
+      storyWorld: F('Shawshank State Penitentiary — a closed system where time itself is the punishment.', 'STRONG'),
+      'char.weakness': F('Believes hope is dangerous — safer not to want anything.', 'STRONG'),
+      'char.need': F('To risk hope again.', 'WORKING'),
+      'char.desire': F('Freedom — first literal, then internal.', 'LOCKED'),
+      'char.opponent': F('Warden Norton, and the prison system he embodies.', 'STRONG'),
+      'char.plan': F('Tunnel through the wall one rock-hammer scoop at a time, in plain sight, for nineteen years.', 'STRONG'),
+      'char.battle': F('The night of the escape — the storm, the tunnel, the river of filth to freedom.', 'LOCKED'),
+      'char.selfRevelation': F('Get busy living, or get busy dying — there is no safe middle.', 'LOCKED'),
+      'char.newEquilibrium': F('Free, on a beach in Zihuatanejo — and Red finally chooses hope too.', 'LOCKED'),
+    });
+
+    const nemo = entry('Finding Nemo', '#1f7a8c', 'An overprotective father learns to let go across an entire ocean.', {
+      premise: F('A forgetful, fearless fish helps an overprotective father cross the ocean to save the son he can barely let out of his sight.', 'LOCKED'),
+      designingPrinciple: F("Fear as a cage — overprotection nearly costs him the son he's trying to save.", 'LOCKED'),
+      bestCharacter: F('Marlin — a father whose caution comes from having already lost almost everything once.', 'LOCKED'),
+      conflict: F("Marlin's fear-driven control vs. Nemo's need to be trusted to take a risk.", 'LOCKED'),
+      basicAction: F('He crosses an entire ocean, forced again and again to trust strangers and let go of control.', 'STRONG'),
+      characterChange: F('An overprotective father becomes one who trusts his son to face the world.', 'LOCKED'),
+      moralChoice: F('Keep Nemo safe by keeping him small, or let him risk the ocean and actually grow up.', 'LOCKED'),
+      audienceAppeal: F("Every parent's fear of losing a child, told as an adventure a child can love too.", 'STRONG'),
+      wishList: F('Loss, overprotection, trust, the ocean as both danger and wonder, found family.', 'WORKING'),
+      possibilities: F('Could be a rescue-only plot; the richer choice is Marlin changing as much as Nemo does.', 'WORKING'),
+      challenges: F("Sharks, jellyfish, the vast ocean, Dory's memory loss, a fish tank full of its own captives.", 'WORKING'),
+      moralArgument: F('Protecting someone completely is its own kind of harm.', 'LOCKED'),
+      storyWorld: F("The ocean itself — vast and dangerous, mirrored by a sterile dentist's fish tank.", 'STRONG'),
+      'char.weakness': F('Terrified of losing another child, so he controls everything.', 'STRONG'),
+      'char.need': F('To trust Nemo, and to trust himself to let go.', 'WORKING'),
+      'char.desire': F('To find and bring Nemo home safely.', 'LOCKED'),
+      'char.opponent': F('The ocean\'s dangers — and his own fear.', 'STRONG'),
+      'char.plan': F('Cross the ocean with Dory, asking for help at every turn.', 'STRONG'),
+      'char.battle': F('The fish-tank rescue and the escape through the drain.', 'LOCKED'),
+      'char.selfRevelation': F('Holding on so tightly was never really about keeping Nemo safe.', 'LOCKED'),
+      'char.newEquilibrium': F('He lets Nemo swim to school on his own.', 'LOCKED'),
+    });
+
+    return [godfather, tootsie, shawshank, nemo];
+  }
+
+  // Swiss-poster thumbnail: one accent bar, an oversized ghost numeral, title set vertically like a spine.
+  posterEl(title, accent, idx) {
+    const R = React, up = title.toUpperCase();
+    const fs = up.length > 20 ? 9 : up.length > 14 ? 11 : up.length > 9 ? 13 : 16;
+    const tf = { fontFamily: "'Hanken Grotesk',sans-serif" };
+    return R.createElement('svg', { viewBox: '0 0 160 220', width: '100%', height: '100%', style: { display: 'block', background: 'var(--panel)', border: '1px solid var(--border)' } },
+      R.createElement('rect', { x: 0, y: 0, width: 160, height: 5, style: { fill: accent } }),
+      R.createElement('text', { x: 8, y: 196, style: { ...tf, fontWeight: 800, fontSize: '128px', fill: 'var(--faint)', opacity: 0.14 } }, String(idx).padStart(2, '0')),
+      R.createElement('text', { x: 146, y: 210, transform: 'rotate(-90 146 210)', style: { ...tf, fontWeight: 800, fontSize: fs + 'px', letterSpacing: '0.03em', fill: 'var(--ink)' } }, up),
+      R.createElement('text', { x: 8, y: 209, style: { ...tf, fontWeight: 600, fontSize: '7px', letterSpacing: '0.08em', fill: 'var(--faint)' } }, 'STORY DOJO')
+    );
+  }
+
+  // Hover-only WebGL sweep (Three.js), layered additively over the poster. Mounted imperatively so
+  // idle posters cost nothing — only the hovered thumbnail runs a render loop.
+  mountPosterShader(id, accent) {
+    if (!window.THREE) return;
+    this._shaders = this._shaders || {};
+    if (this._shaders[id]) return;
+    const host = document.getElementById(id);
+    if (!host) return;
+    const w = host.clientWidth || 84, h = host.clientHeight || 116;
+    const canvas = document.createElement('canvas');
+    canvas.style.cssText = 'position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;';
+    host.appendChild(canvas);
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(w, h, false);
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const material = new THREE.ShaderMaterial({
+      transparent: true,
+      uniforms: { uTime: { value: 0 }, uColor: { value: new THREE.Color(accent) }, uRes: { value: new THREE.Vector2(w, h) } },
+      vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position, 1.0); }',
+      fragmentShader: [
+        'varying vec2 vUv; uniform float uTime; uniform vec3 uColor; uniform vec2 uRes;',
+        'float rand(vec2 c) { return fract(sin(dot(c, vec2(12.9898, 78.233))) * 43758.5453); }',
+        'void main() {',
+        '  vec2 uv = vUv;',
+        '  float diag = uv.x + uv.y * 0.5 - uTime * 0.55;',
+        '  float sweep = smoothstep(0.0, 0.22, 1.0 - abs(fract(diag) - 0.5) * 2.0);',
+        '  float scan = sin((uv.y * uRes.y - uTime * 44.0) * 3.14159265) * 0.035;',
+        '  float grain = (rand(uv * uRes + uTime) - 0.5) * 0.05;',
+        '  float a = clamp(sweep * 0.55 + scan + grain, 0.0, 0.85);',
+        '  gl_FragColor = vec4(uColor, a);',
+        '}',
+      ].join('\n'),
+    });
+    scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
+    const start = performance.now();
+    const entry = { renderer, canvas, raf: 0 };
+    const loop = () => {
+      material.uniforms.uTime.value = (performance.now() - start) / 1000;
+      renderer.render(scene, camera);
+      entry.raf = requestAnimationFrame(loop);
+    };
+    loop();
+    this._shaders[id] = entry;
+  }
+  unmountPosterShader(id) {
+    const entry = this._shaders && this._shaders[id];
+    if (!entry) return;
+    cancelAnimationFrame(entry.raf);
+    entry.renderer.dispose();
+    if (entry.canvas.parentNode) entry.canvas.parentNode.removeChild(entry.canvas);
+    delete this._shaders[id];
+  }
+
+  openLibraryStory(id) {
+    const src = this.LIBRARY.find(x => x.id === id);
+    if (!src) return;
+    const c = JSON.parse(JSON.stringify(src));
+    delete c.builtin; delete c.accent; delete c.blurb;
+    c.id = this.rid(); c.createdAt = Date.now(); c.archived = false;
+    this.setState({ stories: [...this.state.stories, c], currentId: c.id, ui: { ...this.state.ui, showStories: false, viewMode: true, lens: 'story', focusKey: null } });
+    this.persist();
   }
 
   deckList() {
@@ -1115,7 +1399,7 @@ class Component extends DCLogic {
 
     f['@monologue'] = this.mk('', 'OPEN');
     return { id: this.rid(), title: 'Escape the Inheritance', createdAt: Date.now(), archived: false, favorite: false, fields: f, onboarded: true,
-      layouts: this.cloneLayouts(), relations, plot: [], scenes: [], symbols: [],
+      layouts: this.cloneLayouts(), relations, plot: [], scenes: [], events: this.seedEvents(), symbols: [],
       notes: [{ id: this.rid(), title: 'Premise Chapter', text: 'Complete — enough to move into the next Truby stage. Story DNA; let later work challenge it.', createdAt: Date.now() }],
       monologue: { mode: 'confession', pivot: {
         pressure: 'Sitting across from his father the night before the induction ceremony he never asked for.',
@@ -1136,7 +1420,7 @@ class Component extends DCLogic {
     const f = {};
     this.metaP.concat(this.metaC).forEach(([k]) => { f[k] = this.mk('', 'OPEN'); });
     f['@monologue'] = this.mk('', 'OPEN');
-    return { id: this.rid(), title: title || 'Untitled Work', createdAt: Date.now(), archived: false, favorite: false, fields: f, onboarded: false, layouts: this.cloneLayouts(), relations: [], plot: [], scenes: [], symbols: [], notes: [], monologue: this.freshMonologue(), monologueFragments: [] };
+    return { id: this.rid(), title: title || 'Untitled Work', createdAt: Date.now(), archived: false, favorite: false, fields: f, onboarded: false, layouts: this.cloneLayouts(), relations: [], plot: [], scenes: [], events: [], symbols: [], notes: [], monologue: this.freshMonologue(), monologueFragments: [] };
   }
 
   // A finished, read-only worked example — for "compare mine to a master."
@@ -1243,10 +1527,88 @@ class Component extends DCLogic {
         { id: this.rid(), text: '"It\'s not personal, it\'s strictly business" — the line he uses right before it gets personal.', createdAt: Date.now() - 3 * 86400000 },
       ] };
   }
+  seedEvents() {
+    const E = (section, type, text) => ({ id: this.rid(), section, type, link: null, text, createdAt: Date.now() });
+    return [
+      // Early conditioning / family / school
+      E('Early conditioning / family / school', 'event', "He rejects conventional education and decides to become a self-taught artist, believing the educational curriculum is propaganda after witnessing his brother's life."),
+      E('Early conditioning / family / school', 'event', 'He falls into an art-history rabbit hole and begins studying artists.'),
+      E('Early conditioning / family / school', 'realization', 'He discovers there is no single thing called "art"—only artists—and studies what led artists to make significant work.'),
+      E('Early conditioning / family / school', 'event', "He studies successful and unsuccessful artists; failures remind him of his brother's failure and intensify his fear of failing."),
+      E('Early conditioning / family / school', 'event', 'His parents withdraw promised financial support after he confronts/blames them for treatment that contributed to his weaknesses.'),
+      E('Early conditioning / family / school', 'event', 'Without financial support, he enters a major personal crisis.'),
+      E('Early conditioning / family / school', 'event', 'His mental-health difficulties worsen; he becomes angry even toward an ally/friend.'),
+      E('Early conditioning / family / school', 'realization', 'He recognizes that he is hurting someone on his side and realizes he needs psychological help.'),
+      E('Early conditioning / family / school', 'event', 'He finds a therapist.'),
+      E('Early conditioning / family / school', 'event', 'The first therapist focuses on breathing exercises/calming; he initially believes these will help.'),
+      E('Early conditioning / family / school', 'event', 'Trauma returns despite calming techniques.'),
+      E('Early conditioning / family / school', 'event', 'He finds a mentor who begins training him to become an artist.'),
+      E('Early conditioning / family / school', 'event', 'Trauma prevents him completing mentor assignments; unfinished projects accumulate.'),
+      E('Early conditioning / family / school', 'event', 'None of the unfinished works successfully establishes his artistic identity; he experiences failure even in the artistic path he chose.'),
+      E('Early conditioning / family / school', 'realization', 'He spends time with different artists and notices they develop skills through sustained practice while he starts and fails to finish.'),
+      E('Early conditioning / family / school', 'realization', 'He encounters the realization that rejecting conventional education has not automatically made him an artist.'),
+      E('Early conditioning / family / school', 'event', 'He repeatedly enters social situations where he struggles to connect and is ignored/overlooked.'),
+      E('Early conditioning / family / school', 'backstory', 'These experiences damage his self-worth; he begins imagining that a successful artist identity will make people value him.'),
+      E('Early conditioning / family / school', 'realization', 'He becomes increasingly resentful of people, believing success as an artist will make people recognize his worth.'),
+      // Healing / self-discovery
+      E('Healing / self-discovery', 'event', 'Through his social network, he eventually finds a therapist who works much more deeply with him.'),
+      E('Healing / self-discovery', 'realization', 'Through therapy, he revisits old memories/suppressed experiences and recognizes how they shape present behavior.'),
+      E('Healing / self-discovery', 'event', 'He learns to regulate emotions; suppressed emotions begin to surface.'),
+      E('Healing / self-discovery', 'realization', 'Over years, he recognizes how much emotion he has carried inside.'),
+      E('Healing / self-discovery', 'realization', 'He connects emotional expression with artistic expression; emotions he could not release could come through art/writing.'),
+      E('Healing / self-discovery', 'realization', 'He realizes continued suppression causes suffering and expression is necessary.'),
+      E('Healing / self-discovery', 'event', 'After healing, he returns to old unfinished projects and discovers he can now finish them.'),
+      E('Healing / self-discovery', 'event', 'Partially developed skills—especially writing and confident speaking—begin returning.'),
+      E('Healing / self-discovery', 'event', 'After a major confrontation with his father, old trauma resurfaces; regained abilities temporarily disappear.'),
+      E('Healing / self-discovery', 'event', 'As he works through the resurfaced trauma, confidence and ability to express begin returning.'),
+      // Childhood friend / counter-history
+      E('Childhood friend / counter-history', 'backstory', 'A childhood friend becomes a source of joy and safety; he starts wanting to go to the school he hated because the friend is there.'),
+      E('Childhood friend / counter-history', 'event', 'The friend gives him a parting note describing him as kind, brilliant, understanding, etc.'),
+      E('Childhood friend / counter-history', 'backstory', 'He keeps the note for years.'),
+      E('Childhood friend / counter-history', 'event', 'Later he discovers the note and is confronted with a forgotten version of himself.'),
+      E('Childhood friend / counter-history', 'realization', 'He begins realizing he was not inherently bad/deficient; trauma, shame, and separation shaped him.'),
+      E('Childhood friend / counter-history', 'backstory', 'As a child, he is repeatedly shamed for failing school expectations/homework.'),
+      E('Childhood friend / counter-history', 'backstory', 'He attends a school where children are publicly humiliated and taught to participate in shaming others.'),
+      E('Childhood friend / counter-history', 'realization', 'Shame becomes internalized and contributes to later lack of confidence and damaged self-worth.'),
+      E('Childhood friend / counter-history', 'realization', 'Therapy helps him connect present confidence difficulties with childhood shame.'),
+      // Neurodivergence / learning
+      E('Neurodivergence / learning', 'event', 'As an adult, he discovers ADHD helps explain repeated struggles in conventional education.'),
+      E('Neurodivergence / learning', 'realization', 'He realizes his parents did not understand how he functioned; lack of recognition contributed to years of shame.'),
+      E('Neurodivergence / learning', 'realization', 'He understands that personal failure was partly a mismatch with the system and how he functioned.'),
+      E('Neurodivergence / learning', 'event', 'Through therapy, he begins forgiving himself for failures he had treated as evidence that something was fundamentally wrong with him.'),
+      E('Neurodivergence / learning', 'event', 'After therapy, he begins practicing techniques without total dependence on the therapist.'),
+      E('Neurodivergence / learning', 'event', 'He returns to difficult memories on his own and regulates the emotions they bring up.'),
+      E('Neurodivergence / learning', 'event', 'He begins expressing suppressed feelings through poems, writing, and creative work.'),
+      // Being seen / creative emergence
+      E('Being seen / creative emergence', 'event', 'A person encountered through his social network appreciates his creative work/photos.'),
+      E('Being seen / creative emergence', 'realization', "This appreciation reminds him of his childhood friend's recognition."),
+      E('Being seen / creative emergence', 'event', 'He begins posting more work publicly instead of hiding.'),
+      E('Being seen / creative emergence', 'event', 'Positive response gives him enough confidence to recognize he can express himself.'),
+      E('Being seen / creative emergence', 'realization', 'He begins understanding he does not have to wait to become a successful artist before allowing himself visibility.'),
+      E('Being seen / creative emergence', 'realization', 'He begins valuing people who offer genuine support rather than seeing support as something he must earn through success.'),
+      // New material from the final event-collection session
+      E('New material — final session', 'realization', 'Through ADHD education, he learns he does not have to stop himself from learning things he wants to learn; he does not have to limit himself.', ),
+      E('New material — final session', 'realization', 'He realizes he can create cinema, write stories, make art, make murals, and pursue multiple forms of creative expression.'),
+      E('New material — final session', 'event', 'Healing and self-discovery lead him into unusual creative experiments.'),
+      E('New material — final session', 'event', 'The work produced through these experiments is exceptionally strong.'),
+      E('New material — final session', 'event', 'He builds his own studio.'),
+      E('New material — final session', 'event', 'He becomes someone others want to work with because of his skill and talent.'),
+      E('New material — final session', 'realization', 'He discovers that he was always skillful and talented; the problem was not a lack of ability but a mismatch between him and systems designed around neurotypical expectations.'),
+      E('New material — final session', 'realization', 'He recognizes that being neurodivergent makes him an "odd one" in a predominantly neurotypical world, and he must stand by his own story rather than erase it.'),
+      E('New material — final session', 'backstory', 'He has also experienced recurring physical weakness/illness and periods of not being adequately cared for; this contributes to the larger history of feeling neglected and unsupported. Currently contextual material rather than a defined dramatic event.'),
+      E('New material — final session', 'backstory', 'A beautiful ally/partner becomes an important source of support, including financial security and practical help while he is unable to work.'),
+      E('New material — final session', 'theme', 'As the hero grows, the partner also grows professionally and becomes stronger; their development affects each other.'),
+      E('New material — final session', 'realization', 'Through the relationship, the hero develops a deeper respect and understanding of women and begins questioning patriarchal ideas inherited from his family.'),
+      E('New material — final session', 'theme', 'He develops a more profound understanding of the "divine feminine" as part of his changing worldview. Currently a thematic interpretation rather than a concrete event.'),
+      E('New material — final session', 'theme', "The partner's growth may become a parallel arc: while the hero is struggling, she grows in professional strength, and the relationship becomes a space of mutual transformation."),
+      E('New material — final session', 'theme', 'The partner/ally material is partly based on the user\'s real-life relationship and is therefore intentionally left unresolved as a fictional story element for now.'),
+    ];
+  }
 
-  freshUI() { let theme = 'dark'; try { theme = localStorage.getItem('storyDojo_theme') || 'dark'; } catch (e) {} return { lens: 'story', focusKey: null, panX: 72, panY: 28, scale: 0.76, showExport: false, exportFmt: 'md', showStories: false, noteType: 'note', noteDraft: '', newTitle: '', newText: '', copied: false, relVerb: 'causes', relTarget: '', viewMode: false, theme, onboardOpen: false, onboardStep: 0, toast: null, guidedIndex: 0, fragmentDraft: '',
+  freshUI() { let theme = 'dark'; try { theme = localStorage.getItem('storyDojo_theme') || 'dark'; } catch (e) {} return { lens: 'story', focusKey: null, panX: 72, panY: 28, scale: 0.76, showExport: false, exportFmt: 'md', showStories: false, libraryOpen: false, noteType: 'note', noteDraft: '', newTitle: '', newText: '', copied: false, relVerb: 'causes', relTarget: '', viewMode: false, theme, onboardOpen: false, onboardStep: 0, toast: null, guidedIndex: 0, fragmentDraft: '',
     audio: this.freshAudio(), needsAudioSetup: false, audioSetupKey: '', audioSetupTranscribeModel: '', audioSetupExtractModel: '',
-    audioSetupCurrencyCode: '', audioSetupCurrencySymbol: '', audioSetupCurrencyRate: '', audioSetupRatesStatus: null, viewCardKey: null }; }
+    audioSetupCurrencyCode: '', audioSetupCurrencySymbol: '', audioSetupCurrencyRate: '', audioSetupRatesStatus: null, viewCardKey: null,
+    evSection: '', evType: 'event', evText: '', evLink: '' }; }
   freshAudio() { return { open: false, phase: 'idle', scope: null, targetKey: null, group: null, rawMeta: null, seconds: 0, transcript: '', rows: [], error: null, cost: 0 }; }
   loadState() {
     let saved = null;
@@ -1255,8 +1617,15 @@ class Component extends DCLogic {
       const stories = saved.stories;
       if (!stories.some(x => x.reference)) stories.push(this.seedReference());
       if (!stories.some(x => x.id === 'ref-the-reluctant-heir')) stories.push(this.seedReferenceGodfather());
-      // Migrate stories saved before Monologue Studio / the Parking Lot / favorites existed.
-      stories.forEach(st => { if (!st.fields['@monologue']) st.fields['@monologue'] = this.mk('', 'OPEN'); if (!st.monologue) st.monologue = this.freshMonologue(); if (!st.monologueFragments) st.monologueFragments = []; if (st.favorite === undefined) st.favorite = false; });
+      // Migrate stories saved before Monologue Studio / the Parking Lot / favorites / Events existed.
+      stories.forEach(st => {
+        if (!st.fields['@monologue']) st.fields['@monologue'] = this.mk('', 'OPEN');
+        if (!st.monologue) st.monologue = this.freshMonologue();
+        if (!st.monologueFragments) st.monologueFragments = [];
+        if (st.favorite === undefined) st.favorite = false;
+        if (!st.events) st.events = [];
+        if (st.title === 'Escape the Inheritance' && st.events.length === 0) st.events = this.seedEvents();
+      });
       return { stories, currentId: saved.currentId || saved.stories[0].id, ui: this.freshUI() };
     }
     const s = this.seedStory();
@@ -1346,7 +1715,7 @@ class Component extends DCLogic {
       this.setUI({ audioSetupRatesStatus: 'error' });
     }
   }
-  componentWillUnmount() { window.removeEventListener('mousemove', this._onMove); window.removeEventListener('mouseup', this._onUp); window.removeEventListener('keydown', this._onKey); }
+  componentWillUnmount() { window.removeEventListener('mousemove', this._onMove); window.removeEventListener('mouseup', this._onUp); window.removeEventListener('keydown', this._onKey); if (this._shaders) Object.keys(this._shaders).forEach(id => this.unmountPosterShader(id)); }
 
   onCanvasDown(e) { const u = this.state.ui; this._pan = { sx: e.clientX, sy: e.clientY, px: u.panX, py: u.panY }; }
   onNodeDown(key, e) { e.stopPropagation(); const lens = this.state.ui.lens; const p = this.posOf(lens, key); this._nodeDrag = { key, lens, sx: e.clientX, sy: e.clientY, ox: p.x, oy: p.y, moved: false }; }
@@ -1412,6 +1781,7 @@ class Component extends DCLogic {
   openFocus(key) { if (key[0] === '@') { this.setLens('plot'); return; } const f = this.cur().fields[key]; if (f && f.review) { f.review = null; this.commit(); } this.cur().lastFocusKey = key; this.setUI({ focusKey: key, noteDraft: '', noteType: 'note', relVerb: 'causes', relTarget: '' }); this.persist(); }
   closeFocus() { this.setUI({ focusKey: null }); }
   toggleStories() { this.setUI({ showStories: !this.state.ui.showStories }); }
+  toggleLibrary() { this.setUI({ libraryOpen: !this.state.ui.libraryOpen }); }
 
   markRipples(key) { const s = this.cur(); s.relations.forEach(r => { if (r.from === key && this.causalVerbs.indexOf(r.verb) >= 0 && s.fields[r.to]) s.fields[r.to].review = { by: this.labels[key] || key, at: Date.now() }; }); }
   isRefLocked() { return !!this.cur().reference; }
@@ -1694,6 +2064,10 @@ class Component extends DCLogic {
   updateListItem(name, id, patch) { if (this.isRefLocked()) return; const it = this.cur()[name].find(x => x.id === id); if (it) Object.assign(it, patch); this.commit(); }
   removeListItem(name, id) { if (this.isRefLocked()) return; const s = this.cur(); s[name] = s[name].filter(x => x.id !== id); this.commit(); }
 
+  addEvent() { const u = this.state.ui, text = (u.evText || '').trim(); if (!text) return; const s = this.cur(); if (!s.events) s.events = []; s.events.push({ id: this.rid(), section: (u.evSection || '').trim(), type: u.evType || 'event', link: u.evLink || null, text, createdAt: Date.now() }); this.setUI({ evText: '' }); this.commit(); }
+  updateEvent(id, patch) { const it = (this.cur().events || []).find(x => x.id === id); if (it) Object.assign(it, patch); this.commit(); }
+  removeEvent(id) { const s = this.cur(); s.events = (s.events || []).filter(x => x.id !== id); this.commit(); }
+
   newStory() { const s = this.seedBlank('Work ' + String(this.state.stories.length + 1).padStart(2, '0')); this.setState({ stories: [...this.state.stories, s], currentId: s.id, ui: { ...this.freshUI(), showStories: false, lens: 'story', focusKey: null, onboardOpen: true, onboardStep: 0 } }); this.persist(); }
   dupStory(id) { const src = this.state.stories.find(x => x.id === id); const c = JSON.parse(JSON.stringify(src)); c.id = this.rid(); c.title = src.title.replace(' (worked example)', '') + ' (copy)'; c.createdAt = Date.now(); c.archived = false; c.reference = false; this.setState({ stories: [...this.state.stories, c], currentId: c.id }); this.persist(); }
   openStory(id) { this.setState({ currentId: id, ui: { ...this.state.ui, showStories: false, focusKey: null } }); this.persist(); }
@@ -1728,7 +2102,19 @@ class Component extends DCLogic {
     sect('Premise Chapter', this.metaP); sect('Character Structure', this.metaC);
     if (s.relations.length) { P('## Relationships'); P(''); s.relations.forEach(r => P('- ' + (this.labels[r.from] || r.from) + ' — ' + r.verb + ' → ' + (this.labels[r.to] || r.to))); P(''); }
     const coll = (title, arr) => { if (!arr.length) return; P('## ' + title); P(''); arr.forEach(it => { P('### ' + it.title); P(it.text); P(''); }); };
-    coll('Plot', s.plot); coll('Scenes', s.scenes); coll('Notes', s.notes);
+    coll('Plot', s.plot); coll('Scenes', s.scenes);
+    if ((s.events || []).length) {
+      P('## Event Bank'); P('');
+      const typeLbl = {}; this.EVENT_TYPES.forEach(([v, l]) => typeLbl[v] = l);
+      const order = [], groups = {};
+      s.events.forEach((ev, idx) => { const key = ev.section || ''; if (!groups[key]) { groups[key] = []; order.push(key); } groups[key].push({ ev, n: idx + 1 }); });
+      order.forEach(key => {
+        if (key) { P('### ' + key); P(''); }
+        groups[key].forEach(({ ev, n }) => P(n + '. **[' + (typeLbl[ev.type] || 'Event') + ']** ' + ev.text + (ev.link ? ' _(feeds: ' + (this.labels[ev.link] || ev.link) + ')_' : '')));
+        P('');
+      });
+    }
+    coll('Notes', s.notes);
     return L.join('\n');
   }
   fieldJSON(f) { return { text: this.ftext(f), state: this.stateOf(f), status: f.status, currentVersion: f.current + 1, updatedAt: new Date(f.updatedAt).toISOString(), versions: f.versions.map(v => ({ text: v.text, createdAt: new Date(v.createdAt).toISOString() })), notes: f.notes.map(n => ({ type: n.type, text: n.text })) }; }
@@ -1742,7 +2128,9 @@ class Component extends DCLogic {
       character: ch,
       sevenKeySteps: { weaknessNeed: ch.weakness, desire: ch.desire, opponent: ch.opponent, plan: ch.plan, battle: ch.battle, selfRevelation: ch.selfRevelation, newEquilibrium: ch.newEquilibrium },
       relationships: s.relations.map(r => ({ from: this.labels[r.from] || r.from, verb: r.verb, to: this.labels[r.to] || r.to })),
-      plot: s.plot.map(x => ({ title: x.title, text: x.text })), scenes: s.scenes.map(x => ({ title: x.title, text: x.text })), notes: s.notes.map(x => ({ title: x.title, text: x.text })) } };
+      plot: s.plot.map(x => ({ title: x.title, text: x.text })), scenes: s.scenes.map(x => ({ title: x.title, text: x.text })),
+      events: (s.events || []).map((ev, idx) => ({ n: idx + 1, section: ev.section || null, type: ev.type, text: ev.text, feeds: ev.link ? (this.labels[ev.link] || ev.link) : null })),
+      notes: s.notes.map(x => ({ title: x.title, text: x.text })) } };
     return JSON.stringify(obj, null, 2);
   }
 
@@ -1789,7 +2177,7 @@ class Component extends DCLogic {
   renderVals() {
     const R = React, u = this.state.ui, s = this.cur(), lens = this.curLens();
     const isView = !!u.viewMode;
-    const lensId = lens.id, isMap = !isView && lens.kind === 'map', isWork = !isView && lens.kind === 'work', isMemory = !isView && lens.kind === 'memory', isGuided = !isView && lens.kind === 'guided', isMonologue = !isView && lens.kind === 'monologue';
+    const lensId = lens.id, isMap = !isView && lens.kind === 'map', isWork = !isView && lens.kind === 'work', isMemory = !isView && lens.kind === 'memory', isGuided = !isView && lens.kind === 'guided', isMonologue = !isView && lens.kind === 'monologue', isEvents = !isView && lens.kind === 'events';
 
     const lenses = isView ? [] : this.LENSES.map(l => ({ name: l.name, icon: this.lensIcons[l.id] || 'ph:circle', onClick: () => this.setLens(l.id),
       style: { background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0 5px', fontSize: '14px', fontWeight: u.lens === l.id ? 600 : 400, letterSpacing: '-0.005em', color: u.lens === l.id ? 'var(--ink)' : 'var(--muted)', borderBottom: u.lens === l.id ? '1px solid var(--ink)' : '1px solid transparent', marginBottom: '-1px' } }));
@@ -1920,6 +2308,30 @@ class Component extends DCLogic {
         onUse: () => this.useFragmentInDraft(fr.id), onRemove: () => this.removeFragment(fr.id) }));
     }
 
+    // EVENTS
+    const eventTypeLabel = {}; this.EVENT_TYPES.forEach(([v, l]) => eventTypeLabel[v] = l);
+    const eventTypeStyle = (t) => {
+      const map = { event: ['var(--ink)', 'var(--tint-1)'], realization: ['var(--accent)', 'var(--accent-tint)'], theme: ['var(--muted)', 'var(--tint-3)'], backstory: ['var(--faint)', 'var(--tint-4)'], question: ['var(--faint)', 'transparent'] };
+      const [c, bg] = map[t] || map.event;
+      return { fontSize: '10px', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: c, background: bg, padding: '2px 8px', borderRadius: '999px', flex: 'none', whiteSpace: 'nowrap' };
+    };
+    let eventSections = [];
+    if (isEvents) {
+      const evs = s.events || [];
+      const order = [], groups = {};
+      evs.forEach((ev, idx) => { const key = ev.section || ''; if (!groups[key]) { groups[key] = []; order.push(key); } groups[key].push({ ev, n: idx + 1 }); });
+      eventSections = order.map(key => ({
+        hasTitle: !!key, title: key,
+        items: groups[key].map(({ ev, n }) => ({
+          n, text: ev.text, onText: (e) => this.updateEvent(ev.id, { text: e.target.value }),
+          typeLabel: eventTypeLabel[ev.type] || 'Event', typeStyle: eventTypeStyle(ev.type),
+          hasLink: !!ev.link, linkLabel: this.labels[ev.link] || '', onRemove: () => this.removeEvent(ev.id),
+        })),
+      }));
+    }
+    const eventsEmpty = isEvents && (!s.events || s.events.length === 0);
+    const eventLinkOptions = this.metaP.concat(this.metaC).map(([k, l]) => ({ key: k, label: l }));
+
     // FOCUS
     let focusOn = false, f = {};
     if (u.focusKey && s.fields[u.focusKey]) {
@@ -1965,6 +2377,13 @@ class Component extends DCLogic {
         onDictateNote: () => this.startDictation('raw', { label: 'Margin note', current: u.noteDraft || '', onApply: (t) => this.setUI({ noteDraft: t }) }),
       };
     }
+
+    // LIBRARY
+    const libraryList = this.LIBRARY.map((lb, i) => { const posterId = 'poster-' + lb.id; return {
+      title: lb.title, blurb: lb.blurb, poster: this.posterEl(lb.title, lb.accent, i + 1), posterId,
+      onOpen: () => this.openLibraryStory(lb.id),
+      onEnter: () => this.mountPosterShader(posterId, lb.accent), onLeave: () => this.unmountPosterShader(posterId),
+    }; });
 
     // WORKS
     const active = this.state.stories.filter(x => !x.archived && !x.reference)
@@ -2124,7 +2543,13 @@ class Component extends DCLogic {
     return {
       storyTitle: s.title, storyIndex: 'Work ' + String(idxNum).padStart(2, '0'),
       lenses, isMap, isWork, isMemory, isGuided, gd, isMonologue, md, isRefStory: !!s.reference,
-      isView, deckSections, viewCard,
+      isView, isEvents, deckSections, viewCard,
+      eventSections, eventsEmpty,
+      evSection: u.evSection || '', evType: u.evType || 'event', evText: u.evText || '', evLink: u.evLink || '',
+      setEvSection: (e) => this.setUI({ evSection: e.target.value }), setEvType: (e) => this.setUI({ evType: e.target.value }),
+      setEvText: (e) => this.setUI({ evText: e.target.value }), setEvLink: (e) => this.setUI({ evLink: e.target.value }),
+      evTypeOptions: this.EVENT_TYPES.map(([value, label]) => ({ value, label })), evLinkOptions: eventLinkOptions,
+      addEvent: () => this.addEvent(),
       onModeToggle: () => (isView ? this.exitView() : this.enterView()),
       modeToggleLabel: isView ? '‹ Edit' : 'View ▸',
       modeToggleStyle: { background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '14px', fontWeight: 600, color: isView ? 'var(--accent)' : 'var(--muted)', flex: 'none' },
@@ -2145,7 +2570,9 @@ class Component extends DCLogic {
       newTitle: u.newTitle || '', newText: u.newText || '', setNewTitle: (e) => this.setUI({ newTitle: e.target.value }), setNewText: (e) => this.setUI({ newText: e.target.value }), addToList: () => this.addToList(),
       onDictateNewText: () => this.startDictation('raw', { label: collName === 'scenes' ? 'New scene' : 'New beat', current: u.newText || '', onApply: (t) => this.setUI({ newText: t }) }),
       focusOn, f, closeFocus: () => this.closeFocus(), stop: (e) => e.stopPropagation(),
-      showStories: u.showStories, toggleStories: () => this.toggleStories(), storyList, newStory: () => this.newStory(),
+      showStories: u.showStories, toggleStories: () => this.toggleStories(), storyList, libraryList, newStory: () => this.newStory(),
+      libraryOpen: u.libraryOpen, toggleLibrary: () => this.toggleLibrary(),
+      libraryCountLabel: this.LIBRARY.length + ' built-in', libraryToggleLabel: u.libraryOpen ? 'Hide' : 'Show',
       showExport: u.showExport, openExport: () => this.openExport(), closeExport: () => this.closeExport(), exportText: this.exportTextNow(),
       setFmtMd: () => this.setUI({ exportFmt: 'md' }), setFmtJson: () => this.setUI({ exportFmt: 'json' }),
       mdTabStyle: tabLink(u.exportFmt === 'md'), jsonTabStyle: tabLink(u.exportFmt === 'json'),
@@ -2169,6 +2596,33 @@ class Component extends DCLogic {
     };
   }
 }
+</script>
+<script>
+(function(){
+  var PW = 'Sumit';
+  var KEY = 'sd_auth_ok';
+  var gate = document.getElementById('sd-gate');
+  var app = document.getElementById('sd-app');
+  function unlock(remember){
+    gate.style.display = 'none';
+    app.style.display = '';
+    if (remember) { try { localStorage.setItem(KEY, '1'); } catch (e) {} }
+  }
+  var already = false;
+  try { already = localStorage.getItem(KEY) === '1'; } catch (e) {}
+  if (already) { unlock(false); return; }
+  gate.style.display = 'flex';
+  document.getElementById('sd-gate-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    var val = document.getElementById('sd-gate-pw').value;
+    if (val === PW) { unlock(true); }
+    else {
+      document.getElementById('sd-gate-err').style.display = 'block';
+      document.getElementById('sd-gate-pw').value = '';
+      document.getElementById('sd-gate-pw').focus();
+    }
+  });
+})();
 </script>
 </body>
 </html>

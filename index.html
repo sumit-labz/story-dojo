@@ -52,6 +52,8 @@
   .sd-textbox { position: relative; }
   .sd-mic-inline { position: absolute; right: 10px; bottom: 10px; width: 34px; height: 34px; border-radius: 999px; border: 1px solid var(--border-note); background: var(--surface); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px -3px var(--shadow); }
   .sd-mic-inline:hover { border-color: var(--accent); color: var(--accent); }
+  .sd-nav { scrollbar-width: none; }
+  .sd-nav::-webkit-scrollbar { display: none; }
   @media print {
     html, body { background: #fff !important; height: auto !important; }
     header { display: none !important; }
@@ -72,28 +74,30 @@
 <div class="sd-app" style="position:fixed; inset:0; background:var(--bg); color:var(--ink); overflow:hidden; display:flex; flex-direction:column;">
 
   <!-- MASTHEAD -->
-  <header style="position:relative; z-index:6; display:flex; align-items:center; gap:30px; padding:15px 32px; flex:none; border-bottom:1px solid var(--border); background:var(--bg);">
-    <button onClick="{{ toggleStories }}" style="background:none; border:none; padding:0; cursor:pointer; text-align:left; display:flex; align-items:baseline; gap:11px; flex:none;" style-hover="opacity:0.62;">
-      <span style="font-size:19px; font-weight:600; letter-spacing:-0.01em; color:var(--ink); white-space:nowrap;">{{ storyTitle }}</span>
-      <span style="font-size:11px; font-weight:500; color:var(--faint); white-space:nowrap;">{{ storyIndex }}</span>
-    </button>
-    <div style="width:1px; height:20px; background:var(--border); flex:none;"></div>
-    <nav style="display:flex; align-items:center; gap:22px; flex:1; min-width:0; overflow:hidden;">
-      <sc-for list="{{ lenses }}" as="l" hint-placeholder-count="7">
-        <button onClick="{{ l.onClick }}" style="{{ l.style }}" style-hover="color:var(--ink);"><iconify-icon icon="{{ l.icon }}"></iconify-icon> {{ l.name }}</button>
-      </sc-for>
+  <header style="position:relative; z-index:6; flex:none; background:var(--bg); border-bottom:1px solid var(--border);">
+    <div style="display:flex; align-items:center; gap:20px; padding:14px 32px 12px;">
+      <button onClick="{{ toggleStories }}" style="background:none; border:none; padding:0; cursor:pointer; text-align:left; display:flex; align-items:baseline; gap:11px; flex:none;" style-hover="opacity:0.62;">
+        <span style="font-size:19px; font-weight:600; letter-spacing:-0.01em; color:var(--ink); white-space:nowrap;">{{ storyTitle }}</span>
+        <span style="font-size:11px; font-weight:500; color:var(--faint); white-space:nowrap;">{{ storyIndex }}</span>
+      </button>
       <sc-if value="{{ isView }}" hint-placeholder-val="{{ false }}">
         <span style="font-size:14px; font-weight:600; color:var(--ink); display:flex; align-items:center; gap:9px;">Reading view <span style="font-size:12px; font-weight:500; color:var(--faint);">· flashcards</span></span>
       </sc-if>
+      <span style="flex:1;"></span>
+      <sc-if value="{{ showSpineMeter }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:12px; font-weight:500; color:var(--accent); flex:none; white-space:nowrap;">Spine {{ spineLabel }}</div>
+      </sc-if>
+      <button onClick="{{ openAudioSettings }}" title="Voice input settings" style="background:none; border:none; padding:0; cursor:pointer; font-size:15px; color:var(--muted); flex:none;" style-hover="color:var(--ink);">⚙</button>
+      <button onClick="{{ openOnboarding }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:14px; font-weight:500; color:var(--muted); flex:none;" style-hover="color:var(--ink);">Guide</button>
+      <button onClick="{{ onToggleTheme }}" style="{{ themeToggleStyle }}" style-hover="color:var(--ink);">{{ themeToggleLabel }}</button>
+      <button onClick="{{ onModeToggle }}" style="{{ modeToggleStyle }}" style-hover="color:var(--ink);">{{ modeToggleLabel }}</button>
+      <button onClick="{{ openExport }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:14px; font-weight:500; color:var(--muted); flex:none;" style-hover="color:var(--ink);">{{ exportLabel }}</button>
+    </div>
+    <nav class="sd-nav" style="display:flex; align-items:center; gap:26px; padding:0 32px; overflow-x:auto;">
+      <sc-for list="{{ lenses }}" as="l" hint-placeholder-count="13">
+        <button onClick="{{ l.onClick }}" style="{{ l.style }}" style-hover="color:var(--ink);">{{ l.name }}<iconify-icon icon="{{ l.lockIcon }}" style="{{ l.lockIconStyle }}"></iconify-icon></button>
+      </sc-for>
     </nav>
-    <sc-if value="{{ showSpineMeter }}" hint-placeholder-val="{{ false }}">
-      <div style="font-size:12px; font-weight:500; color:var(--accent); flex:none; white-space:nowrap;">Spine {{ spineLabel }}</div>
-    </sc-if>
-    <button onClick="{{ openAudioSettings }}" title="Voice input settings" style="background:none; border:none; padding:0; cursor:pointer; font-size:15px; color:var(--muted); flex:none;" style-hover="color:var(--ink);">⚙</button>
-    <button onClick="{{ openOnboarding }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:14px; font-weight:500; color:var(--muted); flex:none;" style-hover="color:var(--ink);">Guide</button>
-    <button onClick="{{ onToggleTheme }}" style="{{ themeToggleStyle }}" style-hover="color:var(--ink);">{{ themeToggleLabel }}</button>
-    <button onClick="{{ onModeToggle }}" style="{{ modeToggleStyle }}" style-hover="color:var(--ink);">{{ modeToggleLabel }}</button>
-    <button onClick="{{ openExport }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:14px; font-weight:500; color:var(--muted); flex:none;" style-hover="color:var(--ink);">{{ exportLabel }}</button>
   </header>
 
   <main style="position:relative; z-index:2; flex:1; min-height:0; overflow:hidden;">
@@ -372,6 +376,113 @@
               <div style="font-size:13px; line-height:1.5; color:var(--text); margin-bottom:11px; padding-left:12px; border-left:2px solid var(--border-note);">{{ cr.text }}</div>
             </sc-for>
           </aside>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- CHAPTER PLACEHOLDER — read, not yet built out -->
+    <sc-if value="{{ isPlaceholder }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:var(--bg);">
+        <div style="max-width:440px; text-align:center;">
+          <div style="font-size:13px; font-weight:500; color:var(--accent); margin-bottom:10px;">{{ chapterLabel }}</div>
+          <h1 style="font-size:24px; font-weight:600; letter-spacing:-0.02em; color:var(--ink); margin:0 0 12px;">{{ chapterTitle }}</h1>
+          <p style="font-size:14px; line-height:1.55; color:var(--muted); margin:0;">Notes from this chapter aren't in yet. Once they land, this tab turns into the tool that chapter needs.</p>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- STORY ANATOMY — chapter 1: the story as one system, not a form to fill in -->
+    <sc-if value="{{ isAnatomy }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; overflow-y:auto; background:var(--bg);">
+        <div style="max-width:760px; margin:0 auto; padding:56px 44px 120px;">
+          <div style="font-size:13px; font-weight:500; color:var(--accent); margin-bottom:14px;">Chapter 1 · the skeleton, not another form</div>
+          <h1 style="font-size:32px; font-weight:600; letter-spacing:-0.02em; color:var(--ink); margin:0 0 16px; line-height:1.1;">Story Anatomy</h1>
+          <p style="font-size:16px; line-height:1.6; color:var(--text); max-width:62ch; margin:0 0 40px;">{{ sa.coreInsight }}</p>
+
+          <div style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:14px;">THE BODY — Truby's system-to-organ map</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:40px;">
+            <sc-for list="{{ sa.anatomy }}" as="an" hint-placeholder-count="5">
+              <div style="background:var(--inset); border-radius:2px; padding:13px 16px;">
+                <div style="font-size:14px; font-weight:600; color:var(--ink);">{{ an.part }}</div>
+                <div style="font-size:13px; color:var(--muted);">{{ an.body }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:6px;">STORY MOVEMENT — how a story travels, not a type to pick early</div>
+          <p style="font-size:13px; line-height:1.5; color:var(--faint); margin:0 0 14px;">A story can look linear and reveal itself as spiral later. Read these, don't commit to one yet.</p>
+          <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:40px;">
+            <sc-for list="{{ sa.movements }}" as="mv" hint-placeholder-count="5">
+              <div style="display:flex; gap:16px; align-items:baseline; border-left:2px solid var(--border-note); padding-left:14px;">
+                <div style="font-size:14px; font-weight:600; color:var(--ink); width:110px; flex:none;">{{ mv.name }}</div>
+                <div style="font-size:13px; color:var(--muted); line-height:1.5;">{{ mv.desc }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:14px;">THE ROADMAP — Truby's construction order, one module per chapter studied</div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:40px;">
+            <sc-for list="{{ sa.roadmap }}" as="rm" hint-placeholder-count="11">
+              <div style="font-size:12px; font-weight:500; padding:5px 11px; border-radius:12px; background:var(--inset); color:{{ rm.color }};">{{ rm.name }}</div>
+            </sc-for>
+          </div>
+
+          <div style="border-top:1px solid var(--border); padding-top:22px;">
+            <div style="font-size:13px; font-weight:600; color:var(--ink); margin-bottom:6px;">Software implication</div>
+            <p style="font-size:14px; line-height:1.55; color:var(--text); margin:0 0 18px;">{{ sa.implication }}</p>
+            <div style="font-size:13px; font-weight:600; color:var(--ink); margin-bottom:6px;">Implementation status</div>
+            <p style="font-size:14px; line-height:1.55; color:var(--muted); margin:0;">{{ sa.status }}</p>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- EVENT BANK — raw material, reusable across chapters -->
+    <sc-if value="{{ isEvents }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; overflow-y:auto; background:var(--bg);">
+        <div style="max-width:720px; margin:0 auto; padding:56px 44px 120px;">
+          <div style="font-size:13px; font-weight:500; color:var(--accent); margin-bottom:14px;">Raw material · not tied to one chapter</div>
+          <h1 style="font-size:32px; font-weight:600; letter-spacing:-0.02em; color:var(--ink); margin:0 0 12px; line-height:1.1;">Event Bank</h1>
+          <p style="font-size:15px; line-height:1.6; color:var(--muted); max-width:60ch; margin:0 0 36px;">Events collected before structure is imposed on them. Some are dramatic events; others are interpretations, backstory, or themes — tag as you go. This is the material the Seven Key Steps, and later Plot and Scenes, get built from.</p>
+
+          <div style="display:flex; gap:10px; align-items:flex-start; margin-bottom:14px;">
+            <input value="{{ eb.newSection }}" onInput="{{ eb.onNewSection }}" readOnly="{{ eb.readOnly }}" placeholder="Section (optional) — e.g. Early conditioning" style="width:220px; flex:none; background:var(--inset); border:none; border-radius:2px; color:var(--ink); font-size:13px; padding:9px 11px; outline:none;" />
+            <textarea value="{{ eb.newText }}" onInput="{{ eb.onNewText }}" readOnly="{{ eb.readOnly }}" placeholder="A single event — something that happens, not a theme." style="flex:1; background:var(--inset); border:none; border-radius:2px; color:var(--ink); font-size:14px; line-height:1.5; padding:9px 11px; outline:none; resize:none; min-height:40px;"></textarea>
+          </div>
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:36px;">
+            <button onClick="{{ eb.onToggleDraftKind }}" style="background:none; border:1px solid var(--border-note); color:var(--text); font-size:12px; font-weight:500; padding:6px 11px; border-radius:2px; cursor:pointer;" style-hover="border-color:var(--ink);">Tagged as: {{ eb.draftKindLabel }}</button>
+            <span style="flex:1;"></span>
+            <button onClick="{{ eb.addEvent }}" style="background:var(--ink); border:none; color:var(--bg); font-size:13px; font-weight:500; padding:9px 18px; border-radius:2px; cursor:pointer;" style-hover="background:var(--ink-hover);">＋ Add to bank</button>
+          </div>
+
+          <sc-for list="{{ eb.sections }}" as="sec" hint-placeholder-count="6">
+            <div style="margin-bottom:28px;">
+              <div style="font-size:12px; font-weight:600; letter-spacing:.03em; text-transform:uppercase; color:var(--faint); margin-bottom:10px;">{{ sec.section }}</div>
+              <sc-for list="{{ sec.items }}" as="ev" hint-placeholder-count="6">
+                <div style="display:flex; gap:12px; align-items:flex-start; padding:9px 0; border-bottom:1px solid var(--border-soft);">
+                  <span onClick="{{ ev.onToggleKind }}" style="{{ ev.badgeStyle }}" style-hover="opacity:0.75;">{{ ev.badge }}</span>
+                  <div style="flex:1; font-size:14px; line-height:1.5; color:var(--text);">{{ ev.text }}</div>
+                  <button onClick="{{ ev.onRemove }}" style="background:none; border:none; color:var(--faint-4); cursor:pointer; font-size:14px; line-height:1; padding:0;" style-hover="color:var(--accent);">×</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+
+          <sc-if value="{{ eb.hasNotes }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:44px; border-top:1px solid var(--border); padding-top:24px;">
+              <div style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:14px;">SESSION NOTES</div>
+              <sc-for list="{{ eb.notes }}" as="nt" hint-placeholder-count="2">
+                <div style="margin-bottom:12px; background:var(--inset); border-radius:2px;">
+                  <button onClick="{{ nt.onToggle }}" style="width:100%; text-align:left; background:none; border:none; cursor:pointer; padding:13px 16px; font-size:14px; font-weight:600; color:var(--ink); display:flex; justify-content:space-between; align-items:center;">
+                    {{ nt.title }} <span style="font-size:12px; color:var(--faint); font-weight:500;">{{ nt.toggleLabel }}</span>
+                  </button>
+                  <sc-if value="{{ nt.isOpen }}" hint-placeholder-val="{{ false }}">
+                    <div style="padding:0 16px 18px; font-size:14px; line-height:1.6; color:var(--text); white-space:pre-wrap;">{{ nt.text }}</div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
         </div>
       </div>
     </sc-if>
@@ -837,28 +948,39 @@ class Component extends DCLogic {
       '@plot': 'ph:map-pin', '@monologue': 'ph:microphone-stage',
     };
     this.lensIcons = {
-      guided: 'ph:compass-rose', story: 'ph:book-open', character: 'ph:user',
-      moral: 'ph:scales', causal: 'ph:flow-arrow', plot: 'ph:map-pin',
-      scenes: 'ph:film-strip', monologue: 'ph:microphone-stage', memory: 'ph:clock-counter-clockwise',
+      anatomy: 'ph:tree-structure', story: 'ph:book-open-text', sevenSteps: 'ph:stairs', character: 'ph:user',
+      moral: 'ph:scales', storyWorld: 'ph:globe-hemisphere-west', symbolWeb: 'ph:sparkle',
+      plot: 'ph:map-pin', scenes: 'ph:film-strip', sceneConstruction: 'ph:hammer',
+      dialogue: 'ph:chats-circle', events: 'ph:archive', monologue: 'ph:microphone-stage',
     };
     this.stateIcons = { OPEN: 'ph:question', WORKING: 'ph:flask', LOCKED: 'ph:check-circle' };
     this.groupOf = {};
     this.metaP.forEach(([k]) => this.groupOf[k] = 'Premise Chapter');
-    this.metaC.forEach(([k]) => this.groupOf[k] = 'Character Structure');
+    this.metaC.forEach(([k]) => this.groupOf[k] = 'Seven Key Steps');
     this.weight = { premise: 3, designingPrinciple: 3, bestCharacter: 3, conflict: 3, basicAction: 2, characterChange: 2, moralChoice: 2, audienceAppeal: 2, '@plot': 2 };
     this.verbs = ['causes','contradicts','requires','produces','forces','expresses','transforms','culminates in','obstructs','attracts','shapes'];
     this.causalVerbs = ['causes','produces','transforms','forces','culminates in','shapes'];
 
+    // Top nav mirrors the book's chapters (Truby, Anatomy of Story) in reading order.
+    // Locked chapters are ones not read yet — shown so the roadmap is visible, not clickable.
+    // Top nav mirrors Truby's construction roadmap (his own sequence, chapter 1's takeaway),
+    // named by step rather than chapter number. Locked steps haven't been read yet.
     this.LENSES = [
-      { id: 'guided', name: 'Guided', kind: 'guided' },
-      { id: 'story', name: 'Story', kind: 'map' },
-      { id: 'character', name: 'Character', kind: 'map' },
-      { id: 'moral', name: 'Moral', kind: 'map' },
-      { id: 'causal', name: 'Causal', kind: 'map' },
-      { id: 'plot', name: 'Plot', kind: 'work' },
-      { id: 'scenes', name: 'Scenes', kind: 'work' },
+      { id: 'anatomy', name: 'Story Anatomy', kind: 'anatomy', step: 0, locked: false },
+      { id: 'story', name: 'Premise', kind: 'map', step: 1, locked: false },
+      { id: 'sevenSteps', name: 'Seven Key Steps', kind: 'map', step: 2, locked: false },
+      { id: 'character', name: 'Character', kind: 'map', step: 3, locked: false },
+      { id: 'moral', name: 'Moral Argument', kind: 'map', step: 4, locked: true },
+      { id: 'storyWorld', name: 'Story World', kind: 'placeholder', step: 5, locked: true },
+      { id: 'symbolWeb', name: 'Symbol Web', kind: 'placeholder', step: 6, locked: true },
+      { id: 'plot', name: 'Plot', kind: 'work', step: 7, locked: true },
+      { id: 'scenes', name: 'Scene Weave', kind: 'work', step: 8, locked: true },
+      { id: 'sceneConstruction', name: 'Scene Construction', kind: 'placeholder', step: 9, locked: true },
+      { id: 'dialogue', name: 'Symphonic Dialogue', kind: 'placeholder', step: 10, locked: true },
+      // Utilities — not steps in Truby's roadmap, so they sit outside the numbered sequence and
+      // are always unlocked. Raw material collected once, drawn on by whichever chapter needs it.
+      { id: 'events', name: 'Event Bank', kind: 'events' },
       { id: 'monologue', name: 'Monologue', kind: 'monologue' },
-      { id: 'memory', name: 'Memory', kind: 'memory' },
     ];
     // Linear path through the essentials for a first pass — same fields as the map, one at a time.
     this.GUIDED_ORDER = ['premise', 'bestCharacter', 'char.desire', 'conflict', 'char.opponent', 'basicAction', 'characterChange', 'moralChoice'];
@@ -933,13 +1055,15 @@ class Component extends DCLogic {
     // Gravity: each lens reads as vertical dependency columns, composed by relationship, not radial.
     this.LAYOUT = {
       story: { premise:{x:88,y:88}, designingPrinciple:{x:88,y:300}, conflict:{x:88,y:500}, moralChoice:{x:104,y:706}, bestCharacter:{x:568,y:88}, 'char.desire':{x:588,y:300}, 'char.opponent':{x:588,y:456}, basicAction:{x:568,y:600}, characterChange:{x:568,y:772} },
-      character: { bestCharacter:{x:96,y:80}, 'char.weakness':{x:96,y:280}, 'char.desire':{x:96,y:452}, 'char.opponent':{x:96,y:604}, characterChange:{x:96,y:772}, 'char.need':{x:568,y:280}, 'char.plan':{x:568,y:452}, 'char.battle':{x:568,y:604}, 'char.selfRevelation':{x:568,y:772}, 'char.newEquilibrium':{x:568,y:944} },
+      sevenSteps: { 'char.weakness':{x:96,y:80}, 'char.desire':{x:96,y:280}, 'char.opponent':{x:96,y:452}, 'char.plan':{x:96,y:604}, 'char.need':{x:568,y:80}, 'char.battle':{x:568,y:280}, 'char.selfRevelation':{x:568,y:452}, 'char.newEquilibrium':{x:568,y:604} },
+      character: { bestCharacter:{x:96,y:80}, characterChange:{x:96,y:280} },
       moral: { conflict:{x:104,y:88}, moralChoice:{x:104,y:304}, 'char.selfRevelation':{x:104,y:508}, moralArgument:{x:104,y:704}, audienceAppeal:{x:576,y:88}, characterChange:{x:576,y:300} },
       causal: { designingPrinciple:{x:100,y:88}, conflict:{x:100,y:304}, moralChoice:{x:100,y:508}, bestCharacter:{x:576,y:88}, basicAction:{x:576,y:304}, '@plot':{x:576,y:480}, characterChange:{x:576,y:652} },
     };
     this.lensBlurbs = {
       story: 'The architecture. Foundation near the centre of gravity; the unresolved drift at the edges.',
-      character: 'Who is changing, and what pressures them.  Weakness × Action = Change.',
+      sevenSteps: 'Weakness & Need underneath. Desire pushes against an Opponent, worked out through Plan, Battle, Self-Revelation, New Equilibrium.',
+      character: 'Who they are, and who they become.',
       moral: 'What the story argues.  The conflict that produces the choice.',
       causal: 'What produces what.  Follow a change and watch it ripple.',
     };
@@ -1091,14 +1215,14 @@ class Component extends DCLogic {
     f.challenges = this.mk("Family pressure to perform; the brother's success as family mythology; his suicide as an unbearable shadow; mental health misunderstood; therapy stopped as a financial burden; patriarchy and a suppressed mother; academic struggle and isolation; art called unsafe. The world's bargain: compromise yourself and receive approval, security, status, belonging.", 'WORKING');
     f.moralArgument = this.mk('What does the story ultimately argue about what it means to live a good life?', 'OPEN');
     f.storyWorld = this.mk('Where and how does this world physically embody achievement culture?', 'OPEN');
-    f['char.weakness'] = this.mk("Suffers internally; cannot take a stand; cannot express himself; has absorbed others' definitions of morality and success; afraid of disappointing people; believes his destiny may be predetermined by the path that destroyed his brother.", 'WORKING');
-    f['char.need'] = this.mk('To recognize his own worth and live according to his own conscience — to be honest as himself, not only in principle.', 'WORKING');
-    f['char.desire'] = this.mk('What concrete, external thing does he pursue?', 'OPEN');
-    f['char.opponent'] = this.mk('Who is the true opponent? The parents carry the conflict, but the deeper opponent may be the inherited morality itself.', 'OPEN');
-    f['char.plan'] = this.mk('How does he pursue the desire? Develops with the plot.', 'OPEN');
-    f['char.battle'] = this.mk('The final confrontation — not yet designed.', 'OPEN');
-    f['char.selfRevelation'] = this.mk('He recognizes his own goodness and worth, and that living honestly as himself is possible.', 'WORKING');
-    f['char.newEquilibrium'] = this.mk('He lives according to his own conscience; his healing becomes visible and gives others permission to question their own inheritance.', 'WORKING');
+    f['char.weakness'] = this.mk("Shame, comparison, and inherited morality — cannot take a stand, cannot express himself, has absorbed other people's definitions of worth and success.", 'WORKING', { notes:[{ text: "Root cause: a home and school system that shamed him for not meeting conventional expectations, then losing his brother to that same conditioning — success measured by comparison, not by who he actually is." }] });
+    f['char.need'] = this.mk('To know and accept himself instead of measuring himself against other people\'s standards — and to stop betraying himself in order to belong.', 'WORKING', { notes:[{ text: 'Not just self-acceptance in the abstract. He has to learn what his inherited patterns do to the people closest to him, not only to himself.' }] });
+    f['char.desire'] = this.mk('To become a self-taught contemporary artist — rejecting the conventional educational path he believes is the same propaganda that helped destroy his brother.', 'WORKING', { notes:[{ text: 'Gives the story its external, visible journey. Cinema, writing, murals, and a creative studio may all belong here eventually, but stay unlocked until the story confirms them.' }] });
+    f['char.opponent'] = this.mk('Not yet locked. Competing forces are visible — family expectations, inherited cultural morality, educational conditioning, financial dependence, his own internalized shame — but no single figure yet clearly competes with him for the same goal.', 'OPEN', { notes:[{ type:'question', text: "The main structural gap in the Seven Steps. The father carries the most weight so far, but 'inherited morality itself' may be the deeper, harder-to-dramatize opponent." }] });
+    f['char.plan'] = this.mk('Reject the conventional path, teach himself, study working artists, seek mentorship, experiment, and build his own way of working.', 'WORKING', { notes:[{ text: 'Real events already exist for this (the art-history deep dive, the mentor, the unfinished projects) — but the formal Plan, as a deliberate strategy against the Opponent, isn\'t stated yet.' }] });
+    f['char.battle'] = this.mk('Not yet defined. Likely a confrontation with the father, or with whatever finally represents the demand for conformity — but the decisive scene hasn\'t been chosen.', 'OPEN', { notes:[{ type:'question', text: 'Has to be the moment that determines who wins the Desire, not just an emotionally intense scene.' }] });
+    f['char.selfRevelation'] = this.mk('He was never fundamentally deficient — what read as personal failure was shame, trauma, and a mismatch with systems built for a different kind of mind. He doesn\'t have to limit himself to one approved identity.', 'WORKING', { notes:[{ text: 'Moral core: he has to stand by his own story rather than live by inherited definitions of a respectable life. Stays open until the Battle clarifies exactly what proves it through action.' }] });
+    f['char.newEquilibrium'] = this.mk('He stops treating himself as defective, builds his own studio, and makes work distinctive enough that others want to work with him — not chasing external success, but no longer shrinking himself.', 'WORKING', { notes:[{ text: 'The discovery that he was always skillful should land as something the work and his life demonstrate, not a line he simply states.' }] });
 
     const relations = [
       ['premise','expresses','designingPrinciple'],
@@ -1113,9 +1237,88 @@ class Component extends DCLogic {
       ['conflict','requires','basicAction'],
     ].map(([from, verb, to]) => ({ id: this.rid(), from, verb, to }));
 
+    // Event Bank — raw events from the Chapter 3 exercise, collected before structure was imposed.
+    // Not the Seven Steps themselves: the material the Seven Steps (and later Plot/Scenes) get built from.
+    const evt = (section, text, kind) => ({ id: this.rid(), section, text, kind: kind || 'event', createdAt: Date.now() });
+    const events = [
+      evt('Early conditioning / family / school', 'He rejects conventional education and decides to become a self-taught artist, believing the educational curriculum is propaganda after witnessing his brother\'s life.'),
+      evt('Early conditioning / family / school', 'He falls into an art-history rabbit hole and begins studying artists.'),
+      evt('Early conditioning / family / school', 'He discovers there is no single thing called "art" — only artists — and studies what led artists to make significant work.'),
+      evt('Early conditioning / family / school', 'He studies successful and unsuccessful artists; failures remind him of his brother\'s failure and intensify his fear of failing.'),
+      evt('Early conditioning / family / school', 'His parents withdraw promised financial support after he confronts/blames them for treatment that contributed to his weaknesses.'),
+      evt('Early conditioning / family / school', 'Without financial support, he enters a major personal crisis.'),
+      evt('Early conditioning / family / school', 'His mental-health difficulties worsen; he becomes angry even toward an ally/friend.'),
+      evt('Early conditioning / family / school', 'He recognizes that he is hurting someone on his side and realizes he needs psychological help.'),
+      evt('Early conditioning / family / school', 'He finds a therapist.'),
+      evt('Early conditioning / family / school', 'The first therapist focuses on breathing exercises/calming; he initially believes these will help.'),
+      evt('Early conditioning / family / school', 'Trauma returns despite calming techniques.'),
+      evt('Early conditioning / family / school', 'He finds a mentor who begins training him to become an artist.'),
+      evt('Early conditioning / family / school', 'Trauma prevents him completing mentor assignments; unfinished projects accumulate.'),
+      evt('Early conditioning / family / school', 'None of the unfinished works successfully establishes his artistic identity; he experiences failure even in the artistic path he chose.'),
+      evt('Early conditioning / family / school', 'He spends time with different artists and notices they develop skills through sustained practice while he starts and fails to finish.'),
+      evt('Early conditioning / family / school', 'He encounters the realization that rejecting conventional education has not automatically made him an artist.'),
+      evt('Early conditioning / family / school', 'He repeatedly enters social situations where he struggles to connect and is ignored/overlooked.'),
+      evt('Early conditioning / family / school', 'These experiences damage his self-worth; he begins imagining that a successful artist identity will make people value him.'),
+      evt('Early conditioning / family / school', 'He becomes increasingly resentful of people, believing success as an artist will make people recognize his worth.'),
+      evt('Healing / self-discovery', 'Through his social network, he eventually finds a therapist who works much more deeply with him.'),
+      evt('Healing / self-discovery', 'Through therapy, he revisits old memories/suppressed experiences and recognizes how they shape present behavior.'),
+      evt('Healing / self-discovery', 'He learns to regulate emotions; suppressed emotions begin to surface.'),
+      evt('Healing / self-discovery', 'Over years, he recognizes how much emotion he has carried inside.'),
+      evt('Healing / self-discovery', 'He connects emotional expression with artistic expression; emotions he could not release could come through art/writing.'),
+      evt('Healing / self-discovery', 'He realizes continued suppression causes suffering and expression is necessary.'),
+      evt('Healing / self-discovery', 'After healing, he returns to old unfinished projects and discovers he can now finish them.'),
+      evt('Healing / self-discovery', 'Partially developed skills — especially writing and confident speaking — begin returning.'),
+      evt('Healing / self-discovery', 'After a major confrontation with his father, old trauma resurfaces; regained abilities temporarily disappear.'),
+      evt('Healing / self-discovery', 'As he works through the resurfaced trauma, confidence and ability to express begin returning.'),
+      evt('Childhood friend / counter-history', 'A childhood friend becomes a source of joy and safety; he starts wanting to go to the school he hated because the friend is there.'),
+      evt('Childhood friend / counter-history', 'The friend gives him a parting note describing him as kind, brilliant, understanding, etc.'),
+      evt('Childhood friend / counter-history', 'He keeps the note for years.'),
+      evt('Childhood friend / counter-history', 'Later he discovers the note and is confronted with a forgotten version of himself.'),
+      evt('Childhood friend / counter-history', 'He begins realizing he was not inherently bad/deficient; trauma, shame, and separation shaped him.'),
+      evt('Childhood friend / counter-history', 'As a child, he is repeatedly shamed for failing school expectations/homework.'),
+      evt('Childhood friend / counter-history', 'He attends a school where children are publicly humiliated and taught to participate in shaming others.'),
+      evt('Childhood friend / counter-history', 'Shame becomes internalized and contributes to later lack of confidence and damaged self-worth.'),
+      evt('Childhood friend / counter-history', 'Therapy helps him connect present confidence difficulties with childhood shame.'),
+      evt('Neurodivergence / learning', 'As an adult, he discovers ADHD helps explain repeated struggles in conventional education.'),
+      evt('Neurodivergence / learning', 'He realizes his parents did not understand how he functioned; lack of recognition contributed to years of shame.'),
+      evt('Neurodivergence / learning', 'He understands that personal failure was partly a mismatch with the system and how he functioned.'),
+      evt('Neurodivergence / learning', 'Through therapy, he begins forgiving himself for failures he had treated as evidence that something was fundamentally wrong with him.'),
+      evt('Neurodivergence / learning', 'After therapy, he begins practicing techniques without total dependence on the therapist.'),
+      evt('Neurodivergence / learning', 'He returns to difficult memories on his own and regulates the emotions they bring up.'),
+      evt('Neurodivergence / learning', 'He begins expressing suppressed feelings through poems, writing, and creative work.'),
+      evt('Being seen / creative emergence', 'A person encountered through his social network appreciates his creative work/photos.'),
+      evt('Being seen / creative emergence', 'This appreciation reminds him of his childhood friend\'s recognition.'),
+      evt('Being seen / creative emergence', 'He begins posting more work publicly instead of hiding.'),
+      evt('Being seen / creative emergence', 'Positive response gives him enough confidence to recognize he can express himself.'),
+      evt('Being seen / creative emergence', 'He begins understanding he does not have to wait to become a successful artist before allowing himself visibility.'),
+      evt('Being seen / creative emergence', 'He begins valuing people who offer genuine support rather than seeing support as something he must earn through success.'),
+      evt('New material', 'Through ADHD education, he learns he does not have to stop himself from learning things he wants to learn; he does not have to limit himself.'),
+      evt('New material', 'He realizes he can create cinema, write stories, make art, make murals, and pursue multiple forms of creative expression.'),
+      evt('New material', 'Healing and self-discovery lead him into unusual creative experiments.'),
+      evt('New material', 'The work produced through these experiments is exceptionally strong.'),
+      evt('New material', 'He builds his own studio.'),
+      evt('New material', 'He becomes someone others want to work with because of his skill and talent.'),
+      evt('New material', 'He discovers that he was always skillful and talented; the problem was not a lack of ability but a mismatch between him and systems designed around neurotypical expectations.'),
+      evt('New material', 'He recognizes that being neurodivergent makes him an "odd one" in a predominantly neurotypical world, and he must stand by his own story rather than erase it.'),
+      evt('New material', 'He has also experienced recurring physical weakness/illness and periods of not being adequately cared for; this contributes to the larger history of feeling neglected and unsupported.', 'interpretation'),
+      evt('New material', 'A beautiful ally/partner becomes an important source of support, including financial security and practical help while he is unable to work.'),
+      evt('New material', 'As the hero grows, the partner also grows professionally and becomes stronger; their development affects each other.'),
+      evt('New material', 'Through the relationship, the hero develops a deeper respect and understanding of women and begins questioning patriarchal ideas inherited from his family.'),
+      evt('New material', 'He develops a more profound understanding of the "divine feminine" as part of his changing worldview.', 'interpretation'),
+      evt('New material', 'The partner\'s growth may become a parallel arc: while the hero is struggling, she grows in professional strength, and the relationship becomes a space of mutual transformation.'),
+      evt('New material', 'The partner/ally material is partly based on real life and is therefore intentionally left unresolved as a fictional story element for now.', 'interpretation'),
+    ];
+
+    const chapterNotes = [
+      { id: this.rid(), lens: 'sevenSteps', title: 'Personal Outcome — Chapter 3 / Creating Your Premise',
+        text: "I started with a premise about escaping an inherited life and ended up seeing a much larger personal arc: Escape the inheritance → healing becomes contagious.\n\nThe central emotional territory is the conflict between inherited morality and personal conscience; family duty and selfhood; comparison and intrinsic worth; suppression and expression; neurotypical systems and a neurodivergent way of functioning; shame and visibility; needing external validation and standing by one's own story.\n\nThe protagonist is a teenager/young person from an Indian patriarchal family who does not want the conventional respectable life chosen for him. He wants to become a self-taught contemporary artist. His brother's death by suicide becomes the wound that makes conventional success frightening — the brother compared his mediocre college with friends in more prestigious colleges and concluded his life was a failure. The protagonist sees prestige, comparison, and inherited definitions of success as dangerous. But there's a contradiction: he escapes conventional success while still secretly using success to prove he has worth. That contradiction gives the creative journey pressure.\n\nThe deeper discovery: I was not incapable. I was repeatedly trying to function inside systems that did not understand how I functioned. The discovery of ADHD becomes important not simply as an explanation for past failure, but as permission — I do not have to limit what I learn or what I make. Cinema, stories, art, murals, writing, experimentation can coexist. The artist identity becomes less about choosing one approved profession and more about refusing to suppress the way the mind naturally explores and creates.\n\nSuppression → suffering. Expression → release. Expression → art. Therapy helps the protagonist recover the ability to finish work, write, speak, revisit memories, regulate emotions, and express what had previously been suppressed — making artistic expression part of the character's psychological transformation rather than merely a career choice.\n\nTwo mirrors: the destructive one (family, school, comparison — you failed, you are deficient, you must become something else to deserve respect) and the life-giving one (the childhood friend, therapist, supportive people, partner, eventually an audience — you are kind, you can create, you can be seen, you do not need to earn the right to exist as yourself). The childhood friend's old note is especially powerful because it preserves evidence of a self he had forgotten.\n\nA potentially important parallel arc: the partner provides support during the hero's crisis, including practical and financial security, while she also grows professionally and becomes stronger. His transformation changes the relationship; her growth changes him. The relationship may challenge patriarchal assumptions inherited from his family. This material is closely tied to real life and should not be forced into the fictional structure yet.\n\nCaution: the story has reached the point where autobiography can easily become overwhelming. The useful move is not to extract every meaningful personal memory — it's to ask what the fictional protagonist actually experiences that changes him. Real life can remain the source of emotional truth without becoming a literal transcript.\n\nThe most important sentence to carry forward: He has to stand by his own story. Not because he is special — because the story's central conflict is whether a person can stop betraying himself in order to belong.\n\nAuthorship boundary: the raw material comes from lived experience, but the story must eventually become fiction. The protagonist is not required to be me. The partner is not required to be my wife. The events do not have to happen exactly as they happened. The emotional truth can survive transformation. That is the point at which personal experience becomes story.", createdAt: Date.now() },
+      { id: this.rid(), lens: 'sevenSteps', title: 'Truby — Creating Your Premise / Seven Key Steps (exercise summary)',
+        text: "This chapter's practical exercise was to collect story events first, then identify the Seven Key Steps embedded in those events. The important principle was not to impose structure prematurely.\n\nCentral structural distinction: Need = the internal change the hero must make. Desire = the specific external goal that drives the story. The story becomes stronger when the Desire creates the surface journey while the Need is discovered through struggle.\n\nWhat remains before the Seven Steps can be called fully locked: the main Opponent (who specifically competes with the hero for his Desire?), the Plan (what deliberate strategy does he use against that opponent?), the Battle (what is the decisive final confrontation?), the Self-Revelation (what does he discover about himself immediately through the pain of that Battle?), and the New Equilibrium (what concrete new way of living proves that revelation?).\n\nThe event collection is rich enough to stop for now — it is not necessary to invent more events merely to make the list longer, and not necessary to solve these structural gaps by mining more autobiographical material. The material is sufficient to move into sorting/structuring later.\n\nSome Event Bank entries are dramatic events; others are interpretations, realizations, backstory, or themes. That distinction is deliberate — they can be sorted later.", createdAt: Date.now() },
+    ];
+
     f['@monologue'] = this.mk('', 'OPEN');
     return { id: this.rid(), title: 'Escape the Inheritance', createdAt: Date.now(), archived: false, favorite: false, fields: f, onboarded: true,
-      layouts: this.cloneLayouts(), relations, plot: [], scenes: [], symbols: [],
+      layouts: this.cloneLayouts(), relations, plot: [], scenes: [], symbols: [], events, chapterNotes,
       notes: [{ id: this.rid(), title: 'Premise Chapter', text: 'Complete — enough to move into the next Truby stage. Story DNA; let later work challenge it.', createdAt: Date.now() }],
       monologue: { mode: 'confession', pivot: {
         pressure: 'Sitting across from his father the night before the induction ceremony he never asked for.',
@@ -1136,7 +1339,7 @@ class Component extends DCLogic {
     const f = {};
     this.metaP.concat(this.metaC).forEach(([k]) => { f[k] = this.mk('', 'OPEN'); });
     f['@monologue'] = this.mk('', 'OPEN');
-    return { id: this.rid(), title: title || 'Untitled Work', createdAt: Date.now(), archived: false, favorite: false, fields: f, onboarded: false, layouts: this.cloneLayouts(), relations: [], plot: [], scenes: [], symbols: [], notes: [], monologue: this.freshMonologue(), monologueFragments: [] };
+    return { id: this.rid(), title: title || 'Untitled Work', createdAt: Date.now(), archived: false, favorite: false, fields: f, onboarded: false, layouts: this.cloneLayouts(), relations: [], plot: [], scenes: [], symbols: [], events: [], chapterNotes: [], notes: [], monologue: this.freshMonologue(), monologueFragments: [] };
   }
 
   // A finished, read-only worked example — for "compare mine to a master."
@@ -1244,7 +1447,7 @@ class Component extends DCLogic {
       ] };
   }
 
-  freshUI() { let theme = 'dark'; try { theme = localStorage.getItem('storyDojo_theme') || 'dark'; } catch (e) {} return { lens: 'story', focusKey: null, panX: 72, panY: 28, scale: 0.76, showExport: false, exportFmt: 'md', showStories: false, noteType: 'note', noteDraft: '', newTitle: '', newText: '', copied: false, relVerb: 'causes', relTarget: '', viewMode: false, theme, onboardOpen: false, onboardStep: 0, toast: null, guidedIndex: 0, fragmentDraft: '',
+  freshUI() { let theme = 'dark'; try { theme = localStorage.getItem('storyDojo_theme') || 'dark'; } catch (e) {} return { lens: 'story', focusKey: null, panX: 72, panY: 28, scale: 0.76, showExport: false, exportFmt: 'md', showStories: false, noteType: 'note', noteDraft: '', newTitle: '', newText: '', copied: false, relVerb: 'causes', relTarget: '', viewMode: false, theme, onboardOpen: false, onboardStep: 0, toast: null, guidedIndex: 0, fragmentDraft: '', eventDraft: '', eventSection: '', eventKind: 'event', openNoteId: null,
     audio: this.freshAudio(), needsAudioSetup: false, audioSetupKey: '', audioSetupTranscribeModel: '', audioSetupExtractModel: '',
     audioSetupCurrencyCode: '', audioSetupCurrencySymbol: '', audioSetupCurrencyRate: '', audioSetupRatesStatus: null, viewCardKey: null }; }
   freshAudio() { return { open: false, phase: 'idle', scope: null, targetKey: null, group: null, rawMeta: null, seconds: 0, transcript: '', rows: [], error: null, cost: 0 }; }
@@ -1256,7 +1459,29 @@ class Component extends DCLogic {
       if (!stories.some(x => x.reference)) stories.push(this.seedReference());
       if (!stories.some(x => x.id === 'ref-the-reluctant-heir')) stories.push(this.seedReferenceGodfather());
       // Migrate stories saved before Monologue Studio / the Parking Lot / favorites existed.
-      stories.forEach(st => { if (!st.fields['@monologue']) st.fields['@monologue'] = this.mk('', 'OPEN'); if (!st.monologue) st.monologue = this.freshMonologue(); if (!st.monologueFragments) st.monologueFragments = []; if (st.favorite === undefined) st.favorite = false; });
+      stories.forEach(st => { if (!st.fields['@monologue']) st.fields['@monologue'] = this.mk('', 'OPEN'); if (!st.monologue) st.monologue = this.freshMonologue(); if (!st.monologueFragments) st.monologueFragments = []; if (st.favorite === undefined) st.favorite = false; if (!st.events) st.events = []; if (!st.chapterNotes) st.chapterNotes = []; });
+      // Backfill the Chapter 3 (Seven Key Steps / Event Bank) update into the primary saved story,
+      // without touching any field the user has since edited by hand.
+      const primary = stories.find(st => st.title === 'Escape the Inheritance' && !st.reference);
+      if (primary) {
+        const fresh = this.seedStory();
+        const OLD_TEXT = {
+          'char.weakness': "Suffers internally; cannot take a stand; cannot express himself; has absorbed others' definitions of morality and success; afraid of disappointing people; believes his destiny may be predetermined by the path that destroyed his brother.",
+          'char.need': 'To recognize his own worth and live according to his own conscience — to be honest as himself, not only in principle.',
+          'char.desire': 'What concrete, external thing does he pursue?',
+          'char.opponent': 'Who is the true opponent? The parents carry the conflict, but the deeper opponent may be the inherited morality itself.',
+          'char.plan': 'How does he pursue the desire? Develops with the plot.',
+          'char.battle': 'The final confrontation — not yet designed.',
+          'char.selfRevelation': 'He recognizes his own goodness and worth, and that living honestly as himself is possible.',
+          'char.newEquilibrium': 'He lives according to his own conscience; his healing becomes visible and gives others permission to question their own inheritance.',
+        };
+        Object.keys(OLD_TEXT).forEach(key => {
+          const f = primary.fields[key];
+          if (f && this.ftext(f) === OLD_TEXT[key]) primary.fields[key] = fresh.fields[key];
+        });
+        if (!primary.events.length) primary.events = fresh.events;
+        if (!primary.chapterNotes.length) primary.chapterNotes = fresh.chapterNotes;
+      }
       return { stories, currentId: saved.currentId || saved.stories[0].id, ui: this.freshUI() };
     }
     const s = this.seedStory();
@@ -1430,6 +1655,23 @@ class Component extends DCLogic {
     const mf = s.fields['@monologue'], cur = mf.versions[mf.current].text || '';
     this.setFieldText('@monologue', cur ? cur + '\n\n' + frag.text : frag.text);
   }
+  // ---- Event Bank ----
+  addEvent() {
+    if (this.isRefLocked()) return;
+    const t = (this.state.ui.eventDraft || '').trim(); if (!t) return;
+    const section = (this.state.ui.eventSection || '').trim() || 'Uncategorized';
+    this.cur().events.unshift({ id: this.rid(), section, text: t, kind: this.state.ui.eventKind || 'event', createdAt: Date.now() });
+    this.setUI({ eventDraft: '' });
+    this.commit();
+  }
+  removeEvent(id) { if (this.isRefLocked()) return; const s = this.cur(); s.events = s.events.filter(x => x.id !== id); this.commit(); }
+  toggleEventKind(id) {
+    if (this.isRefLocked()) return;
+    const ev = this.cur().events.find(x => x.id === id); if (!ev) return;
+    ev.kind = ev.kind === 'event' ? 'interpretation' : 'event';
+    this.commit();
+  }
+  toggleNoteOpen(id) { this.setUI({ openNoteId: this.state.ui.openNoteId === id ? null : id }); }
   setFieldText(key, text) {
     if (this.isRefLocked()) return;
     const f = this.cur().fields[key];
@@ -1789,10 +2031,73 @@ class Component extends DCLogic {
   renderVals() {
     const R = React, u = this.state.ui, s = this.cur(), lens = this.curLens();
     const isView = !!u.viewMode;
-    const lensId = lens.id, isMap = !isView && lens.kind === 'map', isWork = !isView && lens.kind === 'work', isMemory = !isView && lens.kind === 'memory', isGuided = !isView && lens.kind === 'guided', isMonologue = !isView && lens.kind === 'monologue';
+    const lensId = lens.id, isMap = !isView && lens.kind === 'map', isWork = !isView && lens.kind === 'work', isMemory = !isView && lens.kind === 'memory', isGuided = !isView && lens.kind === 'guided', isMonologue = !isView && lens.kind === 'monologue', isPlaceholder = !isView && lens.kind === 'placeholder', isAnatomy = !isView && lens.kind === 'anatomy', isEvents = !isView && lens.kind === 'events';
 
-    const lenses = isView ? [] : this.LENSES.map(l => ({ name: l.name, icon: this.lensIcons[l.id] || 'ph:circle', onClick: () => this.setLens(l.id),
-      style: { background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0 5px', fontSize: '14px', fontWeight: u.lens === l.id ? 600 : 400, letterSpacing: '-0.005em', color: u.lens === l.id ? 'var(--ink)' : 'var(--muted)', borderBottom: u.lens === l.id ? '1px solid var(--ink)' : '1px solid transparent', marginBottom: '-1px' } }));
+    // Story Anatomy (chapter 1 takeaway) — reference content, not a form: the story is one
+    // interconnected system, not independent fields. See Chapter 1 notes for the source.
+    const sa = !isAnatomy ? null : {
+      coreInsight: 'A story is an interconnected living system, not a collection of independent parts. No element — including the hero — works except in relation to the others.',
+      anatomy: [
+        { part: 'Moral Argument', body: 'Brain' },
+        { part: 'Character', body: 'Heart / Circulation' },
+        { part: 'Revelations', body: 'Nervous System' },
+        { part: 'Structure', body: 'Skeleton' },
+        { part: 'Scenes', body: 'Skin' },
+      ],
+      movements: [
+        { name: 'Linear', desc: 'A → B → C → D' },
+        { name: 'Meandering', desc: 'A → wandering encounters → B → wandering encounters → C' },
+        { name: 'Spiral', desc: 'Return to the same event or question, but each return goes deeper.' },
+        { name: 'Branching', desc: 'One central situation → multiple narrative paths.' },
+        { name: 'Explosive', desc: 'One central point → many things happening simultaneously.' },
+      ],
+      roadmap: this.LENSES.filter(l => l.kind !== 'anatomy' && l.kind !== 'monologue' && l.kind !== 'events').map(l => ({ name: l.name, color: l.locked ? 'var(--faint)' : 'var(--ink)' })),
+      implication: 'Build relationships between these systems, not isolated fields.',
+      status: 'Architecture only — downstream modules get built as their chapters are actually studied, not before.',
+    };
+
+    // Event Bank — raw material, not tied to one chapter. Collected once, pulled from later by
+    // whichever module needs it (Seven Key Steps now; Plot and Scene Weave later).
+    let eb = null;
+    if (isEvents) {
+      const evReadOnly = this.isRefLocked();
+      const evs = s.events || [];
+      const order = [], bySection = {};
+      evs.forEach(e => { if (!bySection[e.section]) { bySection[e.section] = []; order.push(e.section); } bySection[e.section].push(e); });
+      eb = {
+        readOnly: evReadOnly, count: evs.length, hasNotes: !!(s.chapterNotes && s.chapterNotes.length),
+        sections: order.map(section => ({ section, items: bySection[section].map(e => ({
+          id: e.id, text: e.text, isInterpretation: e.kind === 'interpretation',
+          badge: e.kind === 'interpretation' ? 'interpretation' : 'event',
+          badgeStyle: { fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.04em', padding: '2px 6px', borderRadius: '2px', color: e.kind === 'interpretation' ? 'var(--accent)' : 'var(--faint)', background: e.kind === 'interpretation' ? 'var(--accent-bg)' : 'var(--inset)' },
+          onToggleKind: () => this.toggleEventKind(e.id), onRemove: () => this.removeEvent(e.id),
+        })) })),
+        newText: u.eventDraft, onNewText: (e) => this.setUI({ eventDraft: e.target.value }),
+        newSection: u.eventSection, onNewSection: (e) => this.setUI({ eventSection: e.target.value }),
+        draftKindLabel: u.eventKind === 'interpretation' ? 'interpretation' : 'event',
+        onToggleDraftKind: () => this.setUI({ eventKind: u.eventKind === 'interpretation' ? 'event' : 'interpretation' }),
+        addEvent: () => this.addEvent(),
+        notes: (s.chapterNotes || []).map(n => ({ id: n.id, title: n.title, text: n.text, isOpen: u.openNoteId === n.id, toggleLabel: u.openNoteId === n.id ? 'hide' : 'read', onToggle: () => this.toggleNoteOpen(n.id) })),
+      };
+    }
+
+    const lenses = isView ? [] : this.LENSES.map(l => {
+      const active = u.lens === l.id;
+      return {
+        name: l.name,
+        lockIcon: l.locked ? 'ph:lock-simple' : '',
+        lockIconStyle: { fontSize: '11px', marginLeft: l.locked ? '6px' : '0', verticalAlign: '-1px', color: 'var(--faint-2)' },
+        onClick: l.locked ? () => {} : () => this.setLens(l.id),
+        style: {
+          background: 'none', border: 'none', cursor: l.locked ? 'default' : 'pointer',
+          padding: '13px 0 12px', fontSize: '13.5px', fontWeight: active ? 600 : 500,
+          letterSpacing: '-0.005em', whiteSpace: 'nowrap', flex: 'none',
+          color: l.locked ? 'var(--faint-2)' : (active ? 'var(--ink)' : 'var(--muted)'),
+          borderBottom: active ? '2px solid var(--accent)' : '2px solid transparent',
+          marginBottom: '-1px', transition: 'color .12s ease',
+        },
+      };
+    });
 
     // MAP
     const essentialDone = this.essentialCount(), essentialTotal = this.ESSENTIAL.length, spineComplete = essentialDone >= essentialTotal;
@@ -2123,7 +2428,9 @@ class Component extends DCLogic {
 
     return {
       storyTitle: s.title, storyIndex: 'Work ' + String(idxNum).padStart(2, '0'),
-      lenses, isMap, isWork, isMemory, isGuided, gd, isMonologue, md, isRefStory: !!s.reference,
+      lenses, isMap, isWork, isMemory, isGuided, gd, isMonologue, md, isPlaceholder, isAnatomy, sa, isEvents, eb,
+      chapterLabel: 'Not built yet', chapterTitle: lens.name,
+      isRefStory: !!s.reference,
       isView, deckSections, viewCard,
       onModeToggle: () => (isView ? this.exitView() : this.enterView()),
       modeToggleLabel: isView ? '‹ Edit' : 'View ▸',
